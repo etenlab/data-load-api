@@ -18,7 +18,6 @@ import { UfLangNamesService } from './uf-lang-names/uf-lang-names.service';
 import { UfLanguagesService } from './uf-languages/uf-languages.service';
 import { UfAdditionalLanguagesService } from './uf-additional-languages/uf-additional-languages.service';
 import { Iso6392Service } from './iso6392/iso6392.service';
-import { DataLoadControllerController } from './data-load-controller/data-load-controller.controller';
 import { DataLoaderController } from './data-loader/data-loader.controller';
 import { Iso6392Controller } from './iso6392/iso6392.controller';
 import { SilCountryCodesController } from './sil-country-codes/sil-country-codes.controller';
@@ -27,6 +26,7 @@ import { SilIso6393NameController } from './sil-iso6393-name/sil-iso6393-name.co
 import { SilIso6393RetirementsController } from './sil-iso6393-retirements/sil-iso6393-retirements.controller';
 import { SilLanguageCodesController } from './sil-language-codes/sil-language-codes.controller';
 import { SilLanguageIndexController } from './sil-language-index/sil-language-index.controller';
+import { SilIso6393Controller } from './sil-iso6393/sil-iso6393.controller';
 
 @Module({
   imports: [
@@ -34,7 +34,18 @@ import { SilLanguageIndexController } from './sil-language-index/sil-language-in
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
   ],
-  controllers: [AppController, DataLoadControllerController, DataLoaderController, Iso6392Controller, SilCountryCodesController, SilIso6393MacrolanguagesController, SilIso6393NameController, SilIso6393RetirementsController, SilLanguageCodesController, SilLanguageIndexController],
+  controllers: [
+    AppController,
+    DataLoaderController,
+    Iso6392Controller,
+    SilCountryCodesController,
+    SilIso6393MacrolanguagesController,
+    SilIso6393NameController,
+    SilIso6393RetirementsController,
+    SilLanguageCodesController,
+    SilLanguageIndexController,
+    SilIso6393Controller,
+  ],
   providers: [
     AppService,
     SilIso6393Service,
