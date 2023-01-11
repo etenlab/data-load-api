@@ -70,9 +70,6 @@ export class ScriptureService {
   ) {}
 
   async loadUSFMIntoDB(usfmDoc: string) {
-    const nodes: GraphNode[] = [];
-    const relations: GraphRelation[] = [];
-
     const markers = parseUSFMMarkers(usfmDoc).filter(
       (m) => typeof m !== 'string',
     ) as Marker[];
@@ -80,181 +77,26 @@ export class ScriptureService {
     await this.strongsService.loadStrongsIntoDB();
     await this.strongsService.fetchStrongsNodes();
 
-    const books: Book[] = [];
+    const books: Book[] = parseBooksFromMarkers(markers);
 
-    // TODO: determine ARTICLE, WORD SEQUENCE
-    // Build hierarchy of nodes
-    let currentBook: Book;
-    let currentChapter: Chapter;
-    let currentSection: Section;
-    let currentParagraph: Paragraph;
+    const { nodes, relations } = this.buildGraphFromBooks(books);
 
-    for (const marker of markers) {
-      if (isVerseToken(marker.token)) {
-        if (!currentParagraph) {
-          console.warn('Verse marker found before paragraph marker');
+    await this.graphService.saveNodes(nodes);
+    await this.graphService.saveRelations(relations);
+  }
 
-          continue;
-        }
+  async loadUSFMIntoDBByUrl(url: string) {
+    const response = await this.httpService.axiosRef.get(url);
 
-        const verseNode = this.graphService.makeNode({
-          type: NodeTypeName.VERSE,
-          properties: {
-            text: marker.stringifiedContent,
-          },
-        });
+    this.loadUSFMIntoDB(response.data);
+  }
 
-        const verse: Verse = {
-          marker,
-          graphNode: verseNode,
-          words: [],
-        };
-
-        for (const wordMarker of marker.content) {
-          if (typeof wordMarker === 'string') {
-            continue;
-          }
-
-          if (!isWordToken(wordMarker.token)) {
-            continue;
-          }
-
-          const wordNode = this.graphService.makeNode({
-            type: NodeTypeName.WORD,
-            properties: {
-              text: wordMarker.stringifiedContent,
-            },
-          });
-
-          const strongsKey = this.strongsService.getStrongValueFromWord(
-            wordMarker.attributes,
-          );
-
-          const strongsNode = this.strongsService.getStrongsNode(strongsKey);
-          const word: Word = {
-            graphNode: wordNode,
-            strongs: strongsNode ? [strongsNode] : [],
-          };
-
-          verse.words.push(word);
-
-          continue;
-        }
-
-        currentParagraph.verses.push(verse);
-
-        continue;
-      }
-
-      if (isParagraphToken(marker.token)) {
-        if (!currentChapter) {
-          console.warn('Paragraph marker found before chapter marker');
-
-          continue;
-        }
-
-        const paragraphNode = this.graphService.makeNode({
-          type: NodeTypeName.PARAGRAPH,
-        });
-
-        const paragraph: Paragraph = {
-          marker,
-          graphNode: paragraphNode,
-          verses: [],
-        };
-
-        currentParagraph = paragraph;
-
-        currentChapter.paragraphs.push(paragraph);
-        currentSection?.paragraphs.push(paragraph);
-
-        continue;
-      }
-
-      if (isSectionToken(marker.token)) {
-        if (!currentChapter) {
-          console.warn('Section marker found before chapter marker');
-
-          continue;
-        }
-
-        const sectionNode = this.graphService.makeNode({
-          type: NodeTypeName.SECTION,
-          properties: {
-            title: marker.stringifiedContent,
-          },
-        });
-
-        const section: Section = {
-          marker,
-          graphNode: sectionNode,
-          paragraphs: [],
-        };
-
-        currentSection = section;
-
-        currentChapter.sections.push(section);
-
-        continue;
-      }
-
-      if (isChapterToken(marker.token)) {
-        if (!currentBook) {
-          console.warn('Chapter marker found before book marker');
-
-          continue;
-        }
-
-        const chapterNode = this.graphService.makeNode({
-          type: NodeTypeName.CHAPTER,
-          properties: {
-            number: marker.stringifiedContent,
-          },
-        });
-
-        const chapter: Chapter = {
-          marker,
-          graphNode: chapterNode,
-          sections: [],
-          paragraphs: [],
-        };
-
-        currentChapter = chapter;
-
-        currentBook.chapters.push(chapter);
-
-        continue;
-      }
-
-      if (isBookToken(marker.token)) {
-        const bookId = markers.find((m) =>
-          isBookToken(m.token),
-        )?.stringifiedContent;
-
-        if (!bookId) {
-          throw new Error('No book id found in the document');
-        }
-
-        const bookNode = this.graphService.makeNode({
-          type: NodeTypeName.BOOK,
-          properties: {
-            id: bookId,
-          },
-        });
-
-        const book: Book = {
-          marker,
-          graphNode: bookNode,
-          chapters: [],
-        };
-
-        currentBook = book;
-
-        books.push(book);
-
-        continue;
-      }
-    }
+  private buildGraphFromBooks(books: Book[]): {
+    nodes: GraphNode[];
+    relations: GraphRelation[];
+  } {
+    const nodes: GraphNode[] = [];
+    const relations: GraphRelation[] = [];
 
     // Build graph
     for (const book of books) {
@@ -444,12 +286,11 @@ export class ScriptureService {
         }
       }
     }
-  }
 
-  async loadUSFMIntoDBByUrl(url: string) {
-    const response = await this.httpService.axiosRef.get(url);
-
-    this.loadUSFMIntoDB(response.data);
+    return {
+      nodes,
+      relations,
+    };
   }
 }
 
@@ -510,4 +351,184 @@ function SplitVerseIntoSentences(
   }
 
   return sentences;
+}
+
+function parseBooksFromMarkers(markers: Marker[]) {
+  const books: Book[] = [];
+
+  // TODO: determine ARTICLE, WORD SEQUENCE
+  // Build hierarchy of nodes
+  let currentBook: Book;
+  let currentChapter: Chapter;
+  let currentSection: Section;
+  let currentParagraph: Paragraph;
+
+  for (const marker of markers) {
+    if (isVerseToken(marker.token)) {
+      if (!currentParagraph) {
+        console.warn('Verse marker found before paragraph marker');
+
+        continue;
+      }
+
+      const verseNode = this.graphService.makeNode({
+        type: NodeTypeName.VERSE,
+        properties: {
+          text: marker.stringifiedContent,
+        },
+      });
+
+      const verse: Verse = {
+        marker,
+        graphNode: verseNode,
+        words: [],
+      };
+
+      for (const wordMarker of marker.content) {
+        if (typeof wordMarker === 'string') {
+          continue;
+        }
+
+        if (!isWordToken(wordMarker.token)) {
+          continue;
+        }
+
+        const wordNode = this.graphService.makeNode({
+          type: NodeTypeName.WORD,
+          properties: {
+            text: wordMarker.stringifiedContent,
+          },
+        });
+
+        const strongsKey = this.strongsService.getStrongValueFromWord(
+          wordMarker.attributes,
+        );
+
+        const strongsNode = this.strongsService.getStrongsNode(strongsKey);
+        const word: Word = {
+          graphNode: wordNode,
+          strongs: strongsNode ? [strongsNode] : [],
+        };
+
+        verse.words.push(word);
+
+        continue;
+      }
+
+      currentParagraph.verses.push(verse);
+
+      continue;
+    }
+
+    if (isParagraphToken(marker.token)) {
+      if (!currentChapter) {
+        console.warn('Paragraph marker found before chapter marker');
+
+        continue;
+      }
+
+      const paragraphNode = this.graphService.makeNode({
+        type: NodeTypeName.PARAGRAPH,
+      });
+
+      const paragraph: Paragraph = {
+        marker,
+        graphNode: paragraphNode,
+        verses: [],
+      };
+
+      currentParagraph = paragraph;
+
+      currentChapter.paragraphs.push(paragraph);
+      currentSection?.paragraphs.push(paragraph);
+
+      continue;
+    }
+
+    if (isSectionToken(marker.token)) {
+      if (!currentChapter) {
+        console.warn('Section marker found before chapter marker');
+
+        continue;
+      }
+
+      const sectionNode = this.graphService.makeNode({
+        type: NodeTypeName.SECTION,
+        properties: {
+          title: marker.stringifiedContent,
+        },
+      });
+
+      const section: Section = {
+        marker,
+        graphNode: sectionNode,
+        paragraphs: [],
+      };
+
+      currentSection = section;
+
+      currentChapter.sections.push(section);
+
+      continue;
+    }
+
+    if (isChapterToken(marker.token)) {
+      if (!currentBook) {
+        console.warn('Chapter marker found before book marker');
+
+        continue;
+      }
+
+      const chapterNode = this.graphService.makeNode({
+        type: NodeTypeName.CHAPTER,
+        properties: {
+          number: marker.stringifiedContent,
+        },
+      });
+
+      const chapter: Chapter = {
+        marker,
+        graphNode: chapterNode,
+        sections: [],
+        paragraphs: [],
+      };
+
+      currentChapter = chapter;
+
+      currentBook.chapters.push(chapter);
+
+      continue;
+    }
+
+    if (isBookToken(marker.token)) {
+      const bookId = markers.find((m) =>
+        isBookToken(m.token),
+      )?.stringifiedContent;
+
+      if (!bookId) {
+        throw new Error('No book id found in the document');
+      }
+
+      const bookNode = this.graphService.makeNode({
+        type: NodeTypeName.BOOK,
+        properties: {
+          id: bookId,
+        },
+      });
+
+      const book: Book = {
+        marker,
+        graphNode: bookNode,
+        chapters: [],
+      };
+
+      currentBook = book;
+
+      books.push(book);
+
+      continue;
+    }
+  }
+
+  return books;
 }
