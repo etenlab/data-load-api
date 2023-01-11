@@ -38,3 +38,5 @@ lerna-debug.log*
 .env.local
 .env.development
 .env.production
+
+ormconfig.json
