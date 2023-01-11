@@ -29,6 +29,11 @@ import { SilLanguageCodesController } from './sil-language-codes/sil-language-co
 import { SilLanguageIndexController } from './sil-language-index/sil-language-index.controller';
 import { SilIso6393Controller } from './sil-iso6393/sil-iso6393.controller';
 import { entities } from './entities';
+import { StrongsService } from './strongs/strongs.service';
+import { StrongsController } from './strongs/strongs.controller';
+import { ScriptureService } from './scripture/scripture.service';
+import { ScriptureController } from './scripture/scripture.controller';
+import { GraphService } from './graph/graph.service';
 
 @Module({
   imports: [
@@ -63,6 +68,8 @@ import { entities } from './entities';
     SilLanguageCodesController,
     SilLanguageIndexController,
     SilIso6393Controller,
+    StrongsController,
+    ScriptureController,
   ],
   providers: [
     AppService,
@@ -80,6 +87,9 @@ import { entities } from './entities';
     UfLanguagesService,
     UfAdditionalLanguagesService,
     Iso6392Service,
+    StrongsService,
+    ScriptureService,
+    GraphService,
   ],
 })
 export class AppModule {
