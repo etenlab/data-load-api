@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { HttpModule } from '@nestjs/axios';
@@ -27,12 +28,29 @@ import { SilIso6393RetirementsController } from './sil-iso6393-retirements/sil-i
 import { SilLanguageCodesController } from './sil-language-codes/sil-language-codes.controller';
 import { SilLanguageIndexController } from './sil-language-index/sil-language-index.controller';
 import { SilIso6393Controller } from './sil-iso6393/sil-iso6393.controller';
+import { entities } from './entities';
 
 @Module({
   imports: [
     HttpModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_NAME'),
+        entities: entities,
+        synchronize: false,
+        logging: true,
+      }),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forFeature(entities),
   ],
   controllers: [
     AppController,
