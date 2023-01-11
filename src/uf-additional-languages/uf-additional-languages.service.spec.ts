@@ -9,7 +9,9 @@ describe('UfAdditionalLanguagesService', () => {
       providers: [UfAdditionalLanguagesService],
     }).compile();
 
-    service = module.get<UfAdditionalLanguagesService>(UfAdditionalLanguagesService);
+    service = module.get<UfAdditionalLanguagesService>(
+      UfAdditionalLanguagesService,
+    );
   });
 
   it('should be defined', () => {

@@ -9,7 +9,9 @@ describe('SilLanguageCodesController', () => {
       controllers: [SilLanguageCodesController],
     }).compile();
 
-    controller = module.get<SilLanguageCodesController>(SilLanguageCodesController);
+    controller = module.get<SilLanguageCodesController>(
+      SilLanguageCodesController,
+    );
   });
 
   it('should be defined', () => {

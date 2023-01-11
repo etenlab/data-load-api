@@ -9,7 +9,9 @@ describe('SilIso6393RetirementsService', () => {
       providers: [SilIso6393RetirementsService],
     }).compile();
 
-    service = module.get<SilIso6393RetirementsService>(SilIso6393RetirementsService);
+    service = module.get<SilIso6393RetirementsService>(
+      SilIso6393RetirementsService,
+    );
   });
 
   it('should be defined', () => {

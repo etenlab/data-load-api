@@ -9,7 +9,9 @@ describe('SilIso6393RetirementsController', () => {
       controllers: [SilIso6393RetirementsController],
     }).compile();
 
-    controller = module.get<SilIso6393RetirementsController>(SilIso6393RetirementsController);
+    controller = module.get<SilIso6393RetirementsController>(
+      SilIso6393RetirementsController,
+    );
   });
 
   it('should be defined', () => {

@@ -9,7 +9,9 @@ describe('SilIso6393MacrolanguagesService', () => {
       providers: [SilIso6393MacrolanguagesService],
     }).compile();
 
-    service = module.get<SilIso6393MacrolanguagesService>(SilIso6393MacrolanguagesService);
+    service = module.get<SilIso6393MacrolanguagesService>(
+      SilIso6393MacrolanguagesService,
+    );
   });
 
   it('should be defined', () => {

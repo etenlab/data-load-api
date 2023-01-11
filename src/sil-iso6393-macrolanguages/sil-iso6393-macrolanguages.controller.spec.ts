@@ -9,7 +9,9 @@ describe('SilIso6393MacrolanguagesController', () => {
       controllers: [SilIso6393MacrolanguagesController],
     }).compile();
 
-    controller = module.get<SilIso6393MacrolanguagesController>(SilIso6393MacrolanguagesController);
+    controller = module.get<SilIso6393MacrolanguagesController>(
+      SilIso6393MacrolanguagesController,
+    );
   });
 
   it('should be defined', () => {
