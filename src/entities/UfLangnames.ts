@@ -4,11 +4,11 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('uf_langnames', { schema: 'public' })
 export class UfLangnames {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', { name: 'code', nullable: true, length: 100 })
-  code: string | null;
+  code!: string | null;
 
   @Column('character varying', { name: 'name', nullable: true, length: 200 })
-  name: string | null;
+  name!: string | null;
 }

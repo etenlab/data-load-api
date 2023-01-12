@@ -13,16 +13,16 @@ export class SilIso6393RetirementsService {
     private readonly httpService: HttpService,
   ) {}
 
-  async fetchData(): Promise<Observable<AxiosResponse<any>>> {
+  async fetchData(): Promise<Observable<AxiosResponse<any>> | null> {
     const res = await this.httpService
       .get(
         'https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3_Retirements.tab',
       )
       .toPromise();
 
-    const lines = res.data.split('\n');
+    const lines = res!.data.split('\n');
     // id refName	retReason	changeTo	retRemedy	effective
-    lines.map(async (line) => {
+    lines.map(async (line: any) => {
       const [id, refName, retReason, changeTo, retRemedy, effective] =
         line.split('\t');
 

@@ -20,7 +20,7 @@ export class UfCountriesListService {
     private readonly httpService: HttpService,
   ) {}
 
-  async fetchData(): Promise<Observable<AxiosResponse<any>>> {
+  async fetchData(): Promise<Observable<AxiosResponse<any>> | null> {
     const url = 'http://td.unfoldingword.org/uw/countries/';
 
     // const response = await fetch(url);

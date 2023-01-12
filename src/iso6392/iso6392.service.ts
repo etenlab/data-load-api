@@ -25,7 +25,7 @@ export class Iso6392Service {
     private readonly httpService: HttpService,
   ) {}
 
-  async fetchData(): Promise<Observable<AxiosResponse<any>>> {
+  async fetchData(): Promise<Observable<AxiosResponse<any>> | null> {
     const url = 'https://www.loc.gov/standards/iso639-2/php/code_list.php';
 
     const response = await fetch(url);

@@ -17,10 +17,10 @@ export class RelationshipPropertyValue {
     type: 'bigint',
     name: 'relationship_property_value_id',
   })
-  id: string;
+  id!: string;
 
   @Column('jsonb', { name: 'property_value', nullable: true })
-  value: object | null;
+  value!: object | null;
 
   @ManyToOne(
     () => RelationshipPropertyKey,
@@ -32,5 +32,5 @@ export class RelationshipPropertyValue {
       referencedColumnName: 'id',
     },
   ])
-  relationshipPropertyKey: RelationshipPropertyKey;
+  relationshipPropertyKey!: RelationshipPropertyKey;
 }

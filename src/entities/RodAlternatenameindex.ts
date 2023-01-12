@@ -4,19 +4,19 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('rod_alternatenameindex', { schema: 'public' })
 export class RodAlternatenameindex {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', {
     name: 'dialect_code',
     nullable: true,
     length: 10,
   })
-  dialectCode: string | null;
+  dialectCode!: string | null;
 
   @Column('character varying', {
     name: 'variant_name',
     nullable: true,
     length: 500,
   })
-  variantName: string | null;
+  variantName!: string | null;
 }

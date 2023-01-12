@@ -18,14 +18,16 @@ function parseUSFMMarkers(input: string) {
   return markers;
 }
 
-function getFirstMarkerInLine(line: string): {
-  marker: Marker;
-  startPos: number;
-  endPos: number;
-} {
+function getFirstMarkerInLine(line: string):
+  | {
+      marker: Marker;
+      startPos: number;
+      endPos: number;
+    }
+  | undefined {
   const openMarkerStart = line.indexOf('\\');
   if (openMarkerStart === -1) {
-    return undefined;
+    return;
   }
 
   const indexOfOpenMarkerEnd = line.indexOf(' ', openMarkerStart);
@@ -86,9 +88,11 @@ function getAllContentInLine(line: string): (Marker | string)[] {
       break;
     }
 
-    const marker = getFirstMarkerInLine(line.substring(lastPostion));
+    const restOfLine = line.substring(lastPostion);
+
+    const marker = getFirstMarkerInLine(restOfLine);
     if (!marker) {
-      markers.push(line.substring(lastPostion));
+      markers.push(restOfLine);
       break;
     }
 
@@ -108,7 +112,7 @@ function getAllContentInLine(line: string): (Marker | string)[] {
 
 export function stringifyContent(content: (string | Marker)[]): string {
   return content
-    .map((c) => (typeof c === 'string' ? c : stringifyContent([c])))
+    .map((c) => (typeof c === 'string' ? c : stringifyContent(c.content)))
     .join('');
 }
 

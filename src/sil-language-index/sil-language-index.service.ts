@@ -13,14 +13,14 @@ export class SilLanguageIndexService {
     private readonly httpService: HttpService,
   ) {}
 
-  async fetchData(): Promise<Observable<AxiosResponse<any>>> {
+  async fetchData(): Promise<Observable<AxiosResponse<any>> | null> {
     const res = await this.httpService
       .get('https://www.ethnologue.com/sites/default/files/LanguageIndex.tab')
       .toPromise();
 
-    const lines = res.data.split('\n');
+    const lines = res!.data.split('\n');
     // id	printName	invertedName
-    lines.map(async (line) => {
+    lines.map(async (line: any) => {
       const [langId, countryId, nameType, name] = line.split('\t');
 
       const query1 = `SELECT id FROM sil_language_index WHERE language_code='${langId}'`;

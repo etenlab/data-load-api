@@ -4,64 +4,64 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('gsec_listing_of_uupg_100k_additions', { schema: 'public' })
 export class GsecListingOfUupg_100kAdditions {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('bigint', { name: 'peid', nullable: true })
-  peid: string | null;
+  peid!: string | null;
 
   @Column('character varying', {
     name: 'affinity_bloc',
     nullable: true,
     length: 200,
   })
-  affinityBloc: string | null;
+  affinityBloc!: string | null;
 
   @Column('character varying', {
     name: 'people_cluster',
     nullable: true,
     length: 200,
   })
-  peopleCluster: string | null;
+  peopleCluster!: string | null;
 
   @Column('character varying', { name: 'country', nullable: true, length: 200 })
-  country: string | null;
+  country!: string | null;
 
   @Column('character varying', {
     name: 'people_group',
     nullable: true,
     length: 200,
   })
-  peopleGroup: string | null;
+  peopleGroup!: string | null;
 
   @Column('integer', {
     name: 'global_status_of__evangelical_christianity',
     nullable: true,
   })
-  globalStatusOfEvangelicalChristianity: number | null;
+  globalStatusOfEvangelicalChristianity!: number | null;
 
   @Column('character varying', {
     name: 'language',
     nullable: true,
     length: 200,
   })
-  language: string | null;
+  language!: string | null;
 
   @Column('character varying', {
     name: 'religion',
     nullable: true,
     length: 200,
   })
-  religion: string | null;
+  religion!: string | null;
 
   @Column('bigint', { name: 'population', nullable: true })
-  population: string | null;
+  population!: string | null;
 
   @Column('timestamp without time zone', {
     name: 'addition_date',
     nullable: true,
   })
-  additionDate: Date | null;
+  additionDate!: Date | null;
 
   @Column('text', { name: 'addition_reasons', nullable: true })
-  additionReasons: string | null;
+  additionReasons!: string | null;
 }

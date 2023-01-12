@@ -14,26 +14,26 @@ import { RelationshipType } from './RelationshipTypes';
 @Entity('relationships', { schema: 'public' })
 export class Relationship {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'relationship_id' })
-  id: string;
+  id!: string;
 
   @OneToMany(
     () => RelationshipPropertyKey,
     (relationshipPropertyKeys) => relationshipPropertyKeys.relationship,
   )
-  relationshipPropertyKeys: RelationshipPropertyKey[];
+  relationshipPropertyKeys!: RelationshipPropertyKey[];
 
   @ManyToOne(() => Node, (nodes) => nodes.relationships)
   @JoinColumn([{ name: 'from_node_id', referencedColumnName: 'id' }])
-  fromNode: Node;
+  fromNode!: Node;
 
   @ManyToOne(
     () => RelationshipType,
     (relationshipTypes) => relationshipTypes.relationships,
   )
   @JoinColumn([{ name: 'relationship_type', referencedColumnName: 'name' }])
-  type: RelationshipType;
+  type!: RelationshipType;
 
   @ManyToOne(() => Node, (nodes) => nodes.relationships2)
   @JoinColumn([{ name: 'to_node_id', referencedColumnName: 'id' }])
-  toNode: Node;
+  toNode!: Node;
 }

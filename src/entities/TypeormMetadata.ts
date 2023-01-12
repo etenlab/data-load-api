@@ -3,7 +3,7 @@ import { Column, Entity } from 'typeorm';
 @Entity('typeorm_metadata', { schema: 'public' })
 export class TypeormMetadata {
   @Column('character varying', { name: 'type', length: 255 })
-  type: string;
+  type!: string;
 
   @Column('character varying', {
     name: 'database',
@@ -11,7 +11,7 @@ export class TypeormMetadata {
     length: 255,
     default: () => 'NULL::character varying',
   })
-  database: string | null;
+  database!: string | null;
 
   @Column('character varying', {
     name: 'schema',
@@ -19,7 +19,7 @@ export class TypeormMetadata {
     length: 255,
     default: () => 'NULL::character varying',
   })
-  schema: string | null;
+  schema!: string | null;
 
   @Column('character varying', {
     name: 'table',
@@ -27,7 +27,7 @@ export class TypeormMetadata {
     length: 255,
     default: () => 'NULL::character varying',
   })
-  table: string | null;
+  table!: string | null;
 
   @Column('character varying', {
     name: 'name',
@@ -35,8 +35,8 @@ export class TypeormMetadata {
     length: 255,
     default: () => 'NULL::character varying',
   })
-  name: string | null;
+  name!: string | null;
 
   @Column('text', { name: 'value', nullable: true })
-  value: string | null;
+  value!: string | null;
 }

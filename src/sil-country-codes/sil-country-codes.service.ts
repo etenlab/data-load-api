@@ -13,14 +13,14 @@ export class SilCountryCodesService {
     private readonly httpService: HttpService,
   ) {}
 
-  async fetchData(): Promise<Observable<AxiosResponse<any>>> {
+  async fetchData(): Promise<Observable<AxiosResponse<any>> | null> {
     const res = await this.httpService
       .get('https://www.ethnologue.com/sites/default/files/CountryCodes.tab')
       .toPromise();
 
-    const lines = res.data.split('\n');
+    const lines = res!.data.split('\n');
     // id	printName	invertedName
-    lines.map(async (line) => {
+    lines.map(async (line: any) => {
       const [countryId, name, area] = line.split('\t');
       const query1 = `SELECT id FROM sil_country_codes WHERE code='${countryId}'`;
       const res1 = await this.pg.pool.query(query1, []);

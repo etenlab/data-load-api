@@ -14,18 +14,18 @@ import { Relationship } from './Relationships';
 @Entity('nodes', { schema: 'public' })
 export class Node {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'node_id' })
-  id: string;
+  id!: string;
 
   @OneToMany(() => NodePropertyKey, (nodePropertyKeys) => nodePropertyKeys.node)
-  propertyKeys: NodePropertyKey[];
+  propertyKeys!: NodePropertyKey[];
 
   @ManyToOne(() => NodeType, (nodeTypes) => nodeTypes.nodes)
   @JoinColumn([{ name: 'node_type', referencedColumnName: 'name' }])
-  type: NodeType;
+  type!: NodeType;
 
   @OneToMany(() => Relationship, (relationships) => relationships.fromNode)
-  relationships: Relationship[];
+  relationships!: Relationship[];
 
   @OneToMany(() => Relationship, (relationships) => relationships.toNode)
-  relationships2: Relationship[];
+  relationships2!: Relationship[];
 }

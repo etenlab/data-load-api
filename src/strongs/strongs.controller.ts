@@ -7,7 +7,6 @@ export class StrongsController {
 
   @Get('create')
   async create() {
-    const a = await this.strongsService.loadStrongsIntoDB();
-    return a;
+    await this.strongsService.loadStrongsIntoDB();
   }
 }

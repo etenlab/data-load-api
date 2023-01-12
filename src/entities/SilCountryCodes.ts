@@ -4,14 +4,14 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('sil_country_codes', { schema: 'public' })
 export class SilCountryCodes {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', { name: 'code', length: 2 })
-  code: string;
+  code!: string;
 
   @Column('character varying', { name: 'name', length: 200 })
-  name: string;
+  name!: string;
 
   @Column('character varying', { name: 'area', length: 200 })
-  area: string;
+  area!: string;
 }

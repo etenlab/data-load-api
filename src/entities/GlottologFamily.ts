@@ -4,27 +4,27 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('glottolog_family', { schema: 'public' })
 export class GlottologFamily {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', { name: 'name', nullable: true, length: 200 })
-  name: string | null;
+  name!: string | null;
 
   @Column('character varying', { name: 'level', nullable: true, length: 200 })
-  level: string | null;
+  level!: string | null;
 
   @Column('character varying', {
     name: 'macro_area',
     nullable: true,
     length: 550,
   })
-  macroArea: string | null;
+  macroArea!: string | null;
 
   @Column('integer', { name: 'sub_families', nullable: true })
-  subFamilies: number | null;
+  subFamilies!: number | null;
 
   @Column('integer', { name: 'child_languages', nullable: true })
-  childLanguages: number | null;
+  childLanguages!: number | null;
 
   @Column('integer', { name: 'top_level_family', nullable: true })
-  topLevelFamily: number | null;
+  topLevelFamily!: number | null;
 }

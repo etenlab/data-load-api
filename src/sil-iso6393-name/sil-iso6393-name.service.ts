@@ -13,16 +13,16 @@ export class SilIso6393NameService {
     private readonly httpService: HttpService,
   ) {}
 
-  async fetchData(): Promise<Observable<AxiosResponse<any>>> {
+  async fetchData(): Promise<Observable<AxiosResponse<any>> | null> {
     const res = await this.httpService
       .get(
         'https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3_Name_Index.tab',
       )
       .toPromise();
 
-    const lines = res.data.split('\n');
+    const lines = res!.data.split('\n');
     // id	printName	invertedName
-    lines.map(async (line) => {
+    lines.map(async (line: any) => {
       const [id, printName, invertedName] = line.split('\t');
 
       const query1 = `SELECT id FROM iso_639_3_names WHERE iso_639_3='${id}'`;

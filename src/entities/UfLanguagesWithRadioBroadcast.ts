@@ -4,25 +4,25 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('uf_languages_with_radio_broadcast', { schema: 'public' })
 export class UfLanguagesWithRadioBroadcast {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', {
     name: 'language',
     nullable: true,
     length: 200,
   })
-  language: string | null;
+  language!: string | null;
 
   @Column('character varying', { name: 'media', nullable: true, length: 25 })
-  media: string | null;
+  media!: string | null;
 
   @Column('boolean', {
     name: 'published',
     nullable: true,
     default: () => 'false',
   })
-  published: boolean | null;
+  published!: boolean | null;
 
   @Column('text', { name: 'info', nullable: true })
-  info: string | null;
+  info!: string | null;
 }

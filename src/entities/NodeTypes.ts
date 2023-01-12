@@ -5,10 +5,10 @@ import { Node } from './Nodes';
 @Entity('node_types', { schema: 'public' })
 export class NodeType {
   @Column('character varying', { primary: true, name: 'type_name', length: 32 })
-  name: NodeTypeName;
+  name!: NodeTypeName;
 
   @OneToMany(() => Node, (nodes) => nodes.type)
-  nodes: Node[];
+  nodes!: Node[];
 }
 
 export enum NodeTypeName {

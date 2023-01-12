@@ -12,15 +12,15 @@ import { NodePropertyKey } from './NodePropertyKeys';
 @Entity('node_property_values', { schema: 'public' })
 export class NodePropertyValue {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'node_property_value_id' })
-  id: string;
+  id!: string;
 
   @Column('jsonb', { name: 'property_value', nullable: true })
-  value: object | null;
+  value!: { value: any } | null;
 
   @ManyToOne(
     () => NodePropertyKey,
     (nodePropertyKeys) => nodePropertyKeys.values,
   )
   @JoinColumn([{ name: 'node_property_key_id', referencedColumnName: 'id' }])
-  nodePropertyKey: NodePropertyKey;
+  nodePropertyKey!: NodePropertyKey;
 }

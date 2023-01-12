@@ -14,22 +14,22 @@ import { NodePropertyValue } from './NodePropertyValues';
 @Entity('node_property_keys', { schema: 'public' })
 export class NodePropertyKey {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'node_property_key_id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', {
     name: 'property_key',
     nullable: true,
     length: 64,
   })
-  key: string | null;
+  key!: string | null;
 
   @ManyToOne(() => Node, (nodes) => nodes.propertyKeys)
   @JoinColumn([{ name: 'node_id', referencedColumnName: 'id' }])
-  node: Node;
+  node!: Node;
 
   @OneToMany(
     () => NodePropertyValue,
     (nodePropertyValues) => nodePropertyValues.nodePropertyKey,
   )
-  values: NodePropertyValue[];
+  values!: NodePropertyValue[];
 }

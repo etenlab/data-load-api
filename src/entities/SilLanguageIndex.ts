@@ -4,17 +4,17 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('sil_language_index', { schema: 'public' })
 export class SilLanguageIndex {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', { name: 'language_code', length: 3 })
-  languageCode: string;
+  languageCode!: string;
 
   @Column('character varying', { name: 'country_code', length: 2 })
-  countryCode: string;
+  countryCode!: string;
 
   @Column('character varying', { name: 'name_type', length: 2 })
-  nameType: string;
+  nameType!: string;
 
   @Column('character varying', { name: 'name', length: 200 })
-  name: string;
+  name!: string;
 }

@@ -19,26 +19,26 @@ export class RelationshipPropertyKey {
     type: 'bigint',
     name: 'relationship_property_key_id',
   })
-  id: string;
+  id!: string;
 
   @Column('character varying', {
     name: 'property_key',
     nullable: true,
     length: 64,
   })
-  key: string | null;
+  key!: string | null;
 
   @ManyToOne(
     () => Relationship,
     (relationships) => relationships.relationshipPropertyKeys,
   )
   @JoinColumn([{ name: 'relationship_id', referencedColumnName: 'id' }])
-  relationship: Relationship;
+  relationship!: Relationship;
 
   @OneToMany(
     () => RelationshipPropertyValue,
     (relationshipPropertyValues) =>
       relationshipPropertyValues.relationshipPropertyKey,
   )
-  values: RelationshipPropertyValue[];
+  values!: RelationshipPropertyValue[];
 }

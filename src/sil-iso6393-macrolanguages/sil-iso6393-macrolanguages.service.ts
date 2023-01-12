@@ -13,16 +13,16 @@ export class SilIso6393MacrolanguagesService {
     private readonly httpService: HttpService,
   ) {}
 
-  async fetchData(): Promise<Observable<AxiosResponse<any>>> {
+  async fetchData(): Promise<Observable<AxiosResponse<any>> | null> {
     const res = await this.httpService
       .get(
         'https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3-macrolanguages.tab',
       )
       .toPromise();
 
-    const lines = res.data.split('\n');
+    const lines = res!.data.split('\n');
     // mId	iId	iStatus
-    lines.map(async (line, index) => {
+    lines.map(async (line: any, index: any) => {
       // if (index > 0) {
       const [mId, iId, iStatus] = line
         .replace(/(\r\n|\n|\r)/gm, '')

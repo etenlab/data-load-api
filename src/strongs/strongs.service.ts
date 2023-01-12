@@ -38,6 +38,19 @@ export class StrongsService {
     private readonly httpService: HttpService,
   ) {}
 
+  async areStrongsLoaded(): Promise<boolean> {
+    const strongsEnty = await this.nodeRepo.findOne({
+      where: {
+        type: {
+          name: NodeTypeName.STRONGS_ENTRY,
+        },
+      },
+      relations: ['type', 'propertyKeys', 'propertyKeys.values'],
+    });
+
+    return !!strongsEnty;
+  }
+
   async loadStrongsIntoDB() {
     // create node type for strongs entry
     let nodeType = await this.nodeTypesRepo.findOne({
@@ -50,10 +63,12 @@ export class StrongsService {
     }
 
     // clear all existing string entries
-    const nodes = await this.nodeRepo.find({ where: { type: nodeType } });
+    const nodes = await this.nodeRepo.find({
+      where: { type: { name: nodeType.name } },
+    });
 
     const keys = await this.nodePropertyKeysRepo.find({
-      where: { node: { type: nodeType } },
+      where: { node: { type: { name: nodeType.name } } },
     });
 
     const values = await this.nodePropertyValuesRepo.find({
@@ -95,7 +110,7 @@ export class StrongsService {
 
         const nodePropertyValue = new NodePropertyValue();
         nodePropertyValue.nodePropertyKey = nodePropertyKey;
-        nodePropertyValue.value = [value];
+        nodePropertyValue.value = { value };
 
         nodePropertyKey.values = [nodePropertyValue];
 
@@ -108,7 +123,7 @@ export class StrongsService {
 
       const strongsPropertyValue = new NodePropertyValue();
       strongsPropertyValue.nodePropertyKey = strongsPropertyKey;
-      strongsPropertyValue.value = [strongsKey];
+      strongsPropertyValue.value = { value: strongsKey };
       strongsPropertyKey.values = [strongsPropertyValue];
 
       node.propertyKeys.push(strongsPropertyKey);
@@ -142,27 +157,24 @@ export class StrongsService {
     return this._strongsDictionary;
   }
 
-  async fetchStrongsNodes() {
+  async syncStrongsNodesFromDB() {
     const nodes = await this.nodeRepo.find({
       where: {
         type: {
           name: NodeTypeName.STRONGS_ENTRY,
         },
       },
-      relations: [
-        'nodeTypes',
-        'nodeTypes.name',
-        'propertyKeys',
-        'propertyKeys.values',
-      ],
+      relations: ['type', 'type', 'propertyKeys', 'propertyKeys.values'],
     });
 
     this._strongsNodes = new Map();
 
     for (const node of nodes) {
-      const strongsKey = node.propertyKeys.find(
-        (k) => k.key === STRONGS_KEY_NAME,
-      )?.values[0].value['value'];
+      const propKey = node.propertyKeys.find((k) => k.key === STRONGS_KEY_NAME);
+
+      if (!propKey) continue;
+
+      const strongsKey = propKey.values[0].value?.['value'];
 
       if (strongsKey) {
         this._strongsNodes.set(strongsKey, node);
@@ -172,17 +184,17 @@ export class StrongsService {
 
   async getStrongsNodeFromCache(strongsKey: string) {
     if (!this._strongsNodes) {
-      await this.fetchStrongsNodes();
+      await this.syncStrongsNodesFromDB();
     }
 
-    return this._strongsNodes.get(strongsKey);
+    return this._strongsNodes?.get(strongsKey);
   }
 
   getStrongsNode(strongsKey: string) {
-    return this._strongsNodes.get(strongsKey);
+    return this._strongsNodes?.get(strongsKey);
   }
 
-  getStrongValueFromWord(word: Object): string {
+  getStrongValueFromWord(word: { [key: string]: string }): string {
     return word[STRONGS_KEY_NAME];
   }
 }

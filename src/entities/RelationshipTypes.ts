@@ -5,10 +5,10 @@ import { Relationship } from './Relationships';
 @Entity('relationship_types', { schema: 'public' })
 export class RelationshipType {
   @Column('character varying', { primary: true, name: 'type_name', length: 32 })
-  name: RelationshipTypes;
+  name!: RelationshipTypes;
 
   @OneToMany(() => Relationship, (relationships) => relationships.type)
-  relationships: Relationship[];
+  relationships!: Relationship[];
 }
 
 export enum RelationshipTypes {

@@ -4,14 +4,14 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('iso_639_3_macrolanguages', { schema: 'public' })
 export class Iso_639_3Macrolanguages {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id!: string;
 
   @Column('character varying', { name: 'm_id', length: 3 })
-  mId: string;
+  mId!: string;
 
   @Column('character varying', { name: 'i_id', length: 3 })
-  iId: string;
+  iId!: string;
 
   @Column('enum', { name: 'i_status', enum: ['A', 'R'] })
-  iStatus: 'A' | 'R';
+  iStatus!: 'A' | 'R';
 }
