@@ -128,9 +128,12 @@ export class GraphService {
       values.push(...nodeValues);
     }
 
-    await this.nodeRepo.save(nodes.map((n) => n.node));
-    await this.nodePropertyKeysRepo.save(keys);
-    await this.nodePropertyValuesRepo.save(values);
+    await this.nodeRepo.save(
+      nodes.map((n) => n.node),
+      { chunk: 1000 },
+    );
+    await this.nodePropertyKeysRepo.save(keys, { chunk: 1000 });
+    await this.nodePropertyValuesRepo.save(values, { chunk: 1000 });
 
     for (const node of nodes) {
       node.initialized = true;
@@ -203,9 +206,12 @@ export class GraphService {
       values.push(...relationshipValues);
     }
 
-    await this.relationshipRepo.save(relations.map((r) => r.relationship));
-    await this.relationshipPropertyKeyRepo.save(keys);
-    await this.relationshipPropertyValuesRepo.save(values);
+    await this.relationshipRepo.save(
+      relations.map((r) => r.relationship),
+      { chunk: 1000 },
+    );
+    await this.relationshipPropertyKeyRepo.save(keys, { chunk: 1000 });
+    await this.relationshipPropertyValuesRepo.save(values, { chunk: 1000 });
 
     for (const relation of relations) {
       relation.initialized = true;
