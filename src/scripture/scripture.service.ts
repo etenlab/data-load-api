@@ -27,38 +27,32 @@ import { RelationshipTypes } from '../entities/RelationshipTypes';
 
 type Word = {
   marker: Marker;
-  graphNode: GraphNode;
   strongs: Node[];
 };
 
 type Verse = {
   marker: Marker;
-  graphNode: GraphNode;
   words: Word[];
 };
 
 type Paragraph = {
   marker: Marker;
-  graphNode: GraphNode;
   verses: Verse[];
 };
 
 type Section = {
   marker: Marker;
-  graphNode: GraphNode;
   paragraphs: Paragraph[];
 };
 
 type Chapter = {
   marker: Marker;
-  graphNode: GraphNode;
   sections: Section[];
   paragraphs: Paragraph[];
 };
 
 type Book = {
   marker: Marker;
-  graphNode: GraphNode;
   chapters: Chapter[];
 };
 
@@ -104,17 +98,37 @@ export class ScriptureService {
 
     // Build graph
     for (const book of books) {
-      nodes.push(book.graphNode);
+      const bookId = book.marker.stringifiedContent.trim();
+
+      if (!bookId) {
+        throw new Error('No book id found after the book marker');
+      }
+
+      const bookNode = this.graphService.makeNode({
+        type: NodeTypeName.BOOK,
+        properties: {
+          id: bookId,
+        },
+      });
+
+      nodes.push(bookNode);
 
       for (let i = 0; i < book.chapters.length; i++) {
         const chapter = book.chapters[i];
 
-        nodes.push(chapter.graphNode);
+        const chapterNode = this.graphService.makeNode({
+          type: NodeTypeName.CHAPTER,
+          properties: {
+            number: chapter.marker.stringifiedContent.trim(),
+          },
+        });
+
+        nodes.push(chapterNode);
 
         const relationship = this.graphService.makeRelation({
           type: RelationshipTypes.BOOK_TO_CHAPTER,
-          fromNode: book.graphNode.node,
-          toNode: chapter.graphNode.node,
+          fromNode: bookNode.node,
+          toNode: chapterNode.node,
           props: {
             order_book: `${i + 1}`,
             chapter_number: chapter.marker.stringifiedContent.trim(),
@@ -123,15 +137,26 @@ export class ScriptureService {
 
         relations.push(relationship);
 
+        const chapterSections: Map<Section, GraphNode> = new Map();
+
         for (let j = 0; j < chapter.sections.length; j++) {
           const section = chapter.sections[j];
 
-          nodes.push(section.graphNode);
+          const sectionNode = this.graphService.makeNode({
+            type: NodeTypeName.SECTION,
+            properties: {
+              title: section.marker.stringifiedContent.trim(),
+            },
+          });
+
+          chapterSections.set(section, sectionNode);
+
+          nodes.push(sectionNode);
 
           const relationship = this.graphService.makeRelation({
             type: RelationshipTypes.CHAPTER_TO_SECTION,
-            fromNode: chapter.graphNode.node,
-            toNode: section.graphNode.node,
+            fromNode: chapterNode.node,
+            toNode: sectionNode.node,
             props: {
               order_chapter: `${j + 1}`,
             },
@@ -143,12 +168,16 @@ export class ScriptureService {
         for (let k = 0; k < chapter.paragraphs.length; k++) {
           const paragraph = chapter.paragraphs[k];
 
-          nodes.push(paragraph.graphNode);
+          const paragraphNode = this.graphService.makeNode({
+            type: NodeTypeName.PARAGRAPH,
+          });
+
+          nodes.push(paragraphNode);
 
           const relationship = this.graphService.makeRelation({
             type: RelationshipTypes.CHAPTER_TO_PARAGRAPH,
-            fromNode: chapter.graphNode.node,
-            toNode: paragraph.graphNode.node,
+            fromNode: chapterNode.node,
+            toNode: paragraphNode.node,
             props: {
               order_chapter: `${k + 1}`,
             },
@@ -163,10 +192,18 @@ export class ScriptureService {
               continue;
             }
 
+            const sectionNode = chapterSections.get(section);
+
+            if (!sectionNode) {
+              throw new Error(
+                'Section node not found but is supposed to exist',
+              );
+            }
+
             const relationship = this.graphService.makeRelation({
               type: RelationshipTypes.SECTION_TO_PARAGRAPH,
-              fromNode: section.graphNode.node,
-              toNode: paragraph.graphNode.node,
+              fromNode: sectionNode.node,
+              toNode: paragraphNode.node,
               props: {
                 order_section: `${l + 1}`,
               },
@@ -178,7 +215,14 @@ export class ScriptureService {
           for (let m = 0; m < paragraph.verses.length; m++) {
             const verse = paragraph.verses[m];
 
-            nodes.push(verse.graphNode);
+            const verseNode = this.graphService.makeNode({
+              type: NodeTypeName.VERSE,
+              properties: {
+                text: verse.marker.stringifiedContent.trim(),
+              },
+            });
+
+            nodes.push(verseNode);
 
             const verseNumber = verse.marker.stringifiedContent
               .split(' ')[0]
@@ -194,8 +238,8 @@ export class ScriptureService {
 
             const relationship = this.graphService.makeRelation({
               type: RelationshipTypes.PARAGRAPH_TO_VERSE,
-              fromNode: paragraph.graphNode.node,
-              toNode: verse.graphNode.node,
+              fromNode: paragraphNode.node,
+              toNode: verseNode.node,
               props,
             });
 
@@ -217,7 +261,7 @@ export class ScriptureService {
 
               const relationship = this.graphService.makeRelation({
                 type: RelationshipTypes.VERSE_TO_SENTENCE,
-                fromNode: verse.graphNode.node,
+                fromNode: verseNode.node,
                 toNode: sentenceNode.node,
                 props: {
                   order_verse: `${n + 1}`,
@@ -301,6 +345,7 @@ export class ScriptureService {
     const books: Book[] = [];
 
     // TODO: determine ARTICLE, WORD SEQUENCE
+
     // Build hierarchy of nodes
     let currentBook: Book | undefined;
     let currentChapter: Chapter | undefined;
@@ -315,16 +360,8 @@ export class ScriptureService {
           continue;
         }
 
-        const verseNode = this.graphService.makeNode({
-          type: NodeTypeName.VERSE,
-          properties: {
-            text: marker.stringifiedContent.trim(),
-          },
-        });
-
         const verse: Verse = {
           marker,
-          graphNode: verseNode,
           words: [],
         };
 
@@ -351,7 +388,6 @@ export class ScriptureService {
           const strongsNode = this.strongsService.getStrongsNode(strongsKey);
           const word: Word = {
             marker: wordMarker,
-            graphNode: wordNode,
             strongs: strongsNode ? [strongsNode] : [],
           };
 
@@ -372,13 +408,8 @@ export class ScriptureService {
           continue;
         }
 
-        const paragraphNode = this.graphService.makeNode({
-          type: NodeTypeName.PARAGRAPH,
-        });
-
         const paragraph: Paragraph = {
           marker,
-          graphNode: paragraphNode,
           verses: [],
         };
 
@@ -397,16 +428,8 @@ export class ScriptureService {
           continue;
         }
 
-        const sectionNode = this.graphService.makeNode({
-          type: NodeTypeName.SECTION,
-          properties: {
-            title: marker.stringifiedContent.trim(),
-          },
-        });
-
         const section: Section = {
           marker,
-          graphNode: sectionNode,
           paragraphs: [],
         };
 
@@ -424,16 +447,8 @@ export class ScriptureService {
           continue;
         }
 
-        const chapterNode = this.graphService.makeNode({
-          type: NodeTypeName.CHAPTER,
-          properties: {
-            number: marker.stringifiedContent.trim(),
-          },
-        });
-
         const chapter: Chapter = {
           marker,
-          graphNode: chapterNode,
           sections: [],
           paragraphs: [],
         };
@@ -448,24 +463,8 @@ export class ScriptureService {
       }
 
       if (isBookToken(marker.token)) {
-        const bookId = markers.find((m) =>
-          isBookToken(m.token),
-        )?.stringifiedContent;
-
-        if (!bookId) {
-          throw new Error('No book id found in the document');
-        }
-
-        const bookNode = this.graphService.makeNode({
-          type: NodeTypeName.BOOK,
-          properties: {
-            id: bookId.trim(),
-          },
-        });
-
         const book: Book = {
           marker,
-          graphNode: bookNode,
           chapters: [],
         };
 
