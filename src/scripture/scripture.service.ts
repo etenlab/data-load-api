@@ -165,8 +165,8 @@ export class ScriptureService {
           relations.push(relationship);
         }
 
-        for (let k = 0; k < chapter.paragraphs.length; k++) {
-          const paragraph = chapter.paragraphs[k];
+        for (let p = 0; p < chapter.paragraphs.length; p++) {
+          const paragraph = chapter.paragraphs[p];
 
           const paragraphNode = this.graphService.makeNode({
             type: NodeTypeName.PARAGRAPH,
@@ -179,14 +179,14 @@ export class ScriptureService {
             fromNode: chapterNode.node,
             toNode: paragraphNode.node,
             props: {
-              order_chapter: `${k + 1}`,
+              order_chapter: `${p + 1}`,
             },
           });
 
           relations.push(relationship);
 
-          for (let l = 0; l < chapter.sections.length; l++) {
-            const section = chapter.sections[l];
+          for (let s = 0; s < chapter.sections.length; s++) {
+            const section = chapter.sections[s];
 
             if (!section.paragraphs.includes(paragraph)) {
               continue;
@@ -205,15 +205,15 @@ export class ScriptureService {
               fromNode: sectionNode.node,
               toNode: paragraphNode.node,
               props: {
-                order_section: `${l + 1}`,
+                order_section: `${s + 1}`,
               },
             });
 
             relations.push(relationship);
           }
 
-          for (let m = 0; m < paragraph.verses.length; m++) {
-            const verse = paragraph.verses[m];
+          for (let v = 0; v < paragraph.verses.length; v++) {
+            const verse = paragraph.verses[v];
 
             const verseNode = this.graphService.makeNode({
               type: NodeTypeName.VERSE,
@@ -224,12 +224,14 @@ export class ScriptureService {
 
             nodes.push(verseNode);
 
+            let lastWordNode: GraphNode | undefined;
+
             const verseNumber = verse.marker.stringifiedContent
               .split(' ')[0]
               ?.trim();
 
             const props = {
-              order_paragraph: `${m + 1}`,
+              order_paragraph: `${v + 1}`,
             } as any;
 
             if (verseNumber) {
@@ -247,8 +249,8 @@ export class ScriptureService {
 
             const sentences = SplitVerseIntoSentences(verse.marker.content);
 
-            for (let n = 0; n < sentences.length; n++) {
-              const sentenseMarkers = sentences[n];
+            for (let s = 0; s < sentences.length; s++) {
+              const sentenseMarkers = sentences[s];
 
               const sentenceNode = this.graphService.makeNode({
                 type: NodeTypeName.SENTENCE,
@@ -264,7 +266,7 @@ export class ScriptureService {
                 fromNode: verseNode.node,
                 toNode: sentenceNode.node,
                 props: {
-                  order_verse: `${n + 1}`,
+                  order_verse: `${s + 1}`,
                 },
               });
 
@@ -272,7 +274,7 @@ export class ScriptureService {
 
               let charIndex = 1;
               let sentenceWordIndex = 1;
-              for (let m = 0; n < sentenseMarkers.length; m++) {
+              for (let m = 0; m < sentenseMarkers.length; m++) {
                 const marker = sentenseMarkers[m];
 
                 if (typeof marker === 'string') {
@@ -281,55 +283,84 @@ export class ScriptureService {
                   continue;
                 }
 
-                if (typeof marker !== 'string' && !isWordToken(marker.token)) {
-                  console.error(`Unknown marker inside sentence: ${marker}`);
-                  charIndex += marker.stringifiedContent.length;
-
-                  continue;
-                }
-
-                const wordNode = this.graphService.makeNode({
-                  type: NodeTypeName.WORD,
-                  properties: {
-                    text: marker.stringifiedContent.trim(),
-                  },
-                });
-
-                nodes.push(wordNode);
-
-                const relationship = this.graphService.makeRelation({
-                  type: RelationshipTypes.SENTENCE_TO_WORD,
-                  fromNode: sentenceNode.node,
-                  toNode: wordNode.node,
-                  props: {
-                    order_sentence: `${sentenceWordIndex}`,
-                    char_index: `${charIndex}`,
-                  },
-                });
-
-                charIndex += marker.stringifiedContent.length;
-                sentenceWordIndex++;
-
-                relations.push(relationship);
-
-                const strongsNode = this.strongsService.getStrongsNode(
-                  marker.attributes?.[STRONGS_KEY_NAME],
-                );
-
-                if (strongsNode) {
-                  const relationship = this.graphService.makeRelation({
-                    type: RelationshipTypes.WORD_TO_STRONGS_ENTRY,
-                    fromNode: wordNode.node,
-                    toNode: strongsNode,
-                    props: {
+                if (isWordToken(marker.token)) {
+                  const wordNode = this.graphService.makeNode({
+                    type: NodeTypeName.WORD,
+                    properties: {
                       text: marker.stringifiedContent.trim(),
                     },
                   });
 
+                  nodes.push(wordNode);
+
+                  lastWordNode = wordNode;
+
+                  const relationship = this.graphService.makeRelation({
+                    type: RelationshipTypes.SENTENCE_TO_WORD,
+                    fromNode: sentenceNode.node,
+                    toNode: wordNode.node,
+                    props: {
+                      order_sentence: `${sentenceWordIndex}`,
+                      char_index: `${charIndex}`,
+                    },
+                  });
+
+                  charIndex += marker.stringifiedContent.length;
+                  sentenceWordIndex++;
+
                   relations.push(relationship);
+
+                  const strongsNode = this.strongsService.getStrongsNode(
+                    marker.attributes?.['strong'],
+                  );
+
+                  if (strongsNode) {
+                    const relationship = this.graphService.makeRelation({
+                      type: RelationshipTypes.WORD_TO_STRONGS_ENTRY,
+                      fromNode: wordNode.node,
+                      toNode: strongsNode,
+                      props: {
+                        text: marker.stringifiedContent.trim(),
+                      },
+                    });
+
+                    relations.push(relationship);
+                  }
+                } else if (isAdditionToken(marker.token)) {
+                  if (!lastWordNode) {
+                    continue;
+                  }
+
+                  const additionNode = this.graphService.makeNode({
+                    type: NodeTypeName.ADDITION,
+                    properties: {
+                      text: marker.stringifiedContent.trim(),
+                    },
+                  });
+
+                  nodes.push(additionNode);
+
+                  const relationship = this.graphService.makeRelation({
+                    type: RelationshipTypes.WORD_TO_ADDITION,
+                    fromNode: lastWordNode.node,
+                    toNode: additionNode.node,
+                  });
+
+                  charIndex += marker.stringifiedContent.length;
+
+                  relations.push(relationship);
+                } else {
+                  console.error(
+                    `Unknown marker inside sentence: ${marker.token}`,
+                  );
+                  charIndex += marker.stringifiedContent.length;
+
+                  continue;
                 }
               }
             }
+
+            lastWordNode = undefined;
           }
         }
       }
@@ -373,13 +404,6 @@ export class ScriptureService {
           if (!isWordToken(wordMarker.token)) {
             continue;
           }
-
-          const wordNode = this.graphService.makeNode({
-            type: NodeTypeName.WORD,
-            properties: {
-              text: wordMarker.stringifiedContent.trim(),
-            },
-          });
 
           const strongsKey = this.strongsService.getStrongValueFromWord(
             wordMarker.attributes,
@@ -488,6 +512,10 @@ function isWordToken(token: string) {
   return token === 'w';
 }
 
+function isAdditionToken(token: string) {
+  return token === 'add';
+}
+
 function isVerseToken(token: string) {
   return token === 'v';
 }
@@ -520,14 +548,16 @@ function SplitVerseIntoSentences(
       continue;
     }
 
-    // Split on punctuation: !, ?, .
-    const innerSentences = marker.split(/([!.?])/);
-
-    const firstSentence = innerSentences[0].trim();
-
-    if (firstSentence) {
-      sentences[sentences.length - 1].push(firstSentence);
+    if (!marker.trim()) {
+      continue;
     }
+
+    // Divide on sentences ending with punctuation: . ! ? or end of line
+    const innerSentencesIterator = marker.matchAll(
+      /([^\.\!\?\n]+[\.\!\?\n]?)/g,
+    );
+
+    const innerSentences = Array.from(innerSentencesIterator).map((m) => m[0]);
 
     sentences[sentences.length - 1].push(innerSentences[0]);
 

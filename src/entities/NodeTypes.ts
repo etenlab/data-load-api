@@ -13,6 +13,7 @@ export class NodeType {
 
 export enum NodeTypeName {
   WORD = 'word',
+  ADDITION = 'addition',
   WORD_SEQUENCE = 'word-sequence',
   SENTENCE = 'sentence',
   VERSE = 'verse',

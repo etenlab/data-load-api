@@ -22,6 +22,7 @@ export enum RelationshipTypes {
   WORD_TO_ARTICLE = 'word-to-article',
 
   WORD_TO_STRONGS_ENTRY = 'word-to-strongs-entry',
+  WORD_TO_ADDITION = 'word-to-addition',
   SECTION_TO_PARAGRAPH = 'section-to-paragraph',
   SECTION_TO_SECTION = 'section-to-section',
   CHAPTER_TO_SECTION = 'chapter-to-section',
