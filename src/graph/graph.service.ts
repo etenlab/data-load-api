@@ -71,6 +71,9 @@ export class GraphService {
   ) {}
 
   makeNode(params: GraphNodeInput): GraphNode {
+    // console.log(`makeNode: ${params.type}`);
+    // console.log(`makeNode: ${JSON.stringify(params.properties)}`);
+
     const node = new Node();
 
     const keys = [] as NodePropertyKey[];
@@ -135,6 +138,11 @@ export class GraphService {
   }
 
   makeRelation(params: GraphRelationInput): GraphRelation {
+    console.log(
+      `makeRelation: ${params.type} | ${params.fromNode.type} -> ${params.toNode.type}`,
+    );
+    console.log(`makeRelation: ${JSON.stringify(params.props)}`);
+
     const relationship = new Relationship();
 
     const keys = [] as RelationshipPropertyKey[];

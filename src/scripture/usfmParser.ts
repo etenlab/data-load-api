@@ -64,6 +64,7 @@ function getFirstMarkerInLine(line: string):
   }
 
   const nestedContent = getAllContentInLine(childContent);
+  const stringifiedContent = stringifyContent(nestedContent);
 
   return {
     marker: {
@@ -71,7 +72,7 @@ function getFirstMarkerInLine(line: string):
       attributes,
       closed,
       content: nestedContent,
-      stringifiedContent: stringifyContent(nestedContent),
+      stringifiedContent,
     },
     startPos: openMarkerStart,
     endPos: closeMarkerEnd,
@@ -100,7 +101,7 @@ function getAllContentInLine(line: string): (Marker | string)[] {
       lastPostion,
       lastPostion + marker.startPos,
     );
-    precedingString && markers.push();
+    precedingString && markers.push(precedingString);
 
     markers.push(marker.marker);
 

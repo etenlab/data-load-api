@@ -26,6 +26,7 @@ import { RelationshipTypes } from '../entities/RelationshipTypes';
  */
 
 type Word = {
+  marker: Marker;
   graphNode: GraphNode;
   strongs: Node[];
 };
@@ -226,7 +227,7 @@ export class ScriptureService {
               relations.push(relationship);
 
               let charIndex = 1;
-              let strongsWordIndex = 1;
+              let sentenceWordIndex = 1;
               for (let m = 0; n < sentenseMarkers.length; m++) {
                 const marker = sentenseMarkers[m];
 
@@ -257,13 +258,13 @@ export class ScriptureService {
                   fromNode: sentenceNode.node,
                   toNode: wordNode.node,
                   props: {
-                    order_sentence: `${strongsWordIndex}`,
-                    char_index: `${m}`,
+                    order_sentence: `${sentenceWordIndex}`,
+                    char_index: `${charIndex}`,
                   },
                 });
 
                 charIndex += marker.stringifiedContent.length;
-                strongsWordIndex++;
+                sentenceWordIndex++;
 
                 relations.push(relationship);
 
@@ -317,7 +318,7 @@ export class ScriptureService {
         const verseNode = this.graphService.makeNode({
           type: NodeTypeName.VERSE,
           properties: {
-            text: marker.stringifiedContent,
+            text: marker.stringifiedContent.trim(),
           },
         });
 
@@ -339,7 +340,7 @@ export class ScriptureService {
           const wordNode = this.graphService.makeNode({
             type: NodeTypeName.WORD,
             properties: {
-              text: wordMarker.stringifiedContent,
+              text: wordMarker.stringifiedContent.trim(),
             },
           });
 
@@ -349,6 +350,7 @@ export class ScriptureService {
 
           const strongsNode = this.strongsService.getStrongsNode(strongsKey);
           const word: Word = {
+            marker: wordMarker,
             graphNode: wordNode,
             strongs: strongsNode ? [strongsNode] : [],
           };
@@ -398,7 +400,7 @@ export class ScriptureService {
         const sectionNode = this.graphService.makeNode({
           type: NodeTypeName.SECTION,
           properties: {
-            title: marker.stringifiedContent,
+            title: marker.stringifiedContent.trim(),
           },
         });
 
@@ -425,7 +427,7 @@ export class ScriptureService {
         const chapterNode = this.graphService.makeNode({
           type: NodeTypeName.CHAPTER,
           properties: {
-            number: marker.stringifiedContent,
+            number: marker.stringifiedContent.trim(),
           },
         });
 
@@ -437,6 +439,8 @@ export class ScriptureService {
         };
 
         currentChapter = chapter;
+        currentSection = undefined;
+        currentParagraph = undefined;
 
         currentBook.chapters.push(chapter);
 
@@ -455,7 +459,7 @@ export class ScriptureService {
         const bookNode = this.graphService.makeNode({
           type: NodeTypeName.BOOK,
           properties: {
-            id: bookId,
+            id: bookId.trim(),
           },
         });
 
@@ -466,6 +470,10 @@ export class ScriptureService {
         };
 
         currentBook = book;
+
+        currentChapter = undefined;
+        currentSection = undefined;
+        currentParagraph = undefined;
 
         books.push(book);
 
@@ -490,7 +498,7 @@ function isParagraphToken(token: string) {
 }
 
 function isSectionToken(token: string) {
-  return token === 's';
+  return /^s\d+/.test(token);
 }
 
 function isChapterToken(token: string) {
