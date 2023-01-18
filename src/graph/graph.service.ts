@@ -392,10 +392,8 @@ export class GraphService {
     node: Node,
     incoming = true,
     outgoing = true,
-    noRepeatIds: Set<string> = new Set(),
+    noRepeatIds: Map<string, NodeSimplified> = new Map(),
   ): NodeSimplified {
-    noRepeatIds.add(node.id);
-
     const selfNode: NodeSimplified = {
       id: node.id,
       type: node.typeName,
@@ -404,56 +402,52 @@ export class GraphService {
       outgoing: outgoing ? [] : undefined,
     };
 
+    if (noRepeatIds.has(node.id)) {
+      throw new Error(
+        'Graph traversed the same node twice. This should not have happened',
+      );
+    }
+
+    noRepeatIds.set(node.id, selfNode);
+
     for (const outgRelationship of (outgoing && node.outgoingRelationships) ||
       []) {
-      if (noRepeatIds.has(outgRelationship.toNode.id)) continue;
-
       const relationshipProps = buildRelationshipProps(outgRelationship);
+      const simplifiedNode = noRepeatIds.get(outgRelationship.toNode.id);
 
       const rel = {
-        node: this.simplifyNodeGraph(
-          outgRelationship.toNode,
-          incoming,
-          outgoing,
-          noRepeatIds,
-        ),
+        node:
+          simplifiedNode ||
+          this.simplifyNodeGraph(
+            outgRelationship.toNode,
+            incoming,
+            outgoing,
+            noRepeatIds,
+          ),
         props: relationshipProps,
       };
 
       selfNode.outgoing!.push(rel);
-
-      if (!incoming) continue;
-
-      rel.node.incoming!.push({
-        node: selfNode,
-        props: relationshipProps,
-      });
     }
 
     for (const incRelationship of (incoming && node.incomingRelationships) ||
       []) {
-      if (noRepeatIds.has(incRelationship.toNode.id)) continue;
-
       const relationshipProps = buildRelationshipProps(incRelationship);
+      const simplifiedNode = noRepeatIds.get(incRelationship.fromNode.id);
 
       const rel = {
-        node: this.simplifyNodeGraph(
-          incRelationship.fromNode,
-          incoming,
-          outgoing,
-          noRepeatIds,
-        ),
+        node:
+          simplifiedNode ||
+          this.simplifyNodeGraph(
+            incRelationship.fromNode,
+            incoming,
+            outgoing,
+            noRepeatIds,
+          ),
         props: relationshipProps,
       };
 
       selfNode.incoming!.push(rel);
-
-      if (!outgoing) continue;
-
-      rel.node.outgoing!.push({
-        node: selfNode,
-        props: relationshipProps,
-      });
     }
 
     return selfNode;
@@ -622,35 +616,6 @@ function matchNodesWithOutgoingRelationships(
       node.outgoingRelationships.push(relationship);
     }
   }
-
-  // // relationId -> nodes
-  // const relationsFromNodes = new Map<string, Node[]>();
-
-  // for (const outgRel of relationships || []) {
-  //   if (!relationsFromNodes.has(outgRel.id)) {
-  //     relationsFromNodes.set(outgRel.id, []);
-  //   }
-
-  //   relationsFromNodes.get(outgRel.id)?.push(outgRel.fromNode);
-  // }
-
-  // for (const relationship of relationships) {
-  //   const relFromNodes = relationsFromNodes.get(relationship.id);
-
-  //   for (const node of relFromNodes || []) {
-  //     if (node.id !== relationship.fromNode.id) {
-  //       continue;
-  //     }
-
-  //     if (!node.outgoingRelationships) {
-  //       node.outgoingRelationships = [];
-  //     }
-
-  //     node.outgoingRelationships.push(relationship);
-
-  //     relationship.fromNode = node;
-  //   }
-  // }
 }
 
 function matchNodesWithIncomingRelationships(
