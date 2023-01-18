@@ -341,12 +341,11 @@ export class GraphService {
       throw new Error(`Node does not exist: ${nodeId}`);
     }
 
-    const allNodes: Map<string, Node> = new Map();
-    const allRelationships: Map<string, Relationship> = new Map();
+    const passedNodes: Map<string, Node> = new Map();
 
     let nodesFrom = [node];
 
-    allNodes.set(node.id, node);
+    passedNodes.set(node.id, node);
 
     let depth = 0;
 
@@ -359,21 +358,33 @@ export class GraphService {
 
       const relationships = await this.fetchRelationshipsByBatches(
         uniqueNodes,
-        100,
+        10000,
       );
 
       matchNodesWithOutgoingRelationships(nodesFrom, relationships);
 
       const nextNodeIds = [...new Set(relationships.map((r) => r.toNode.id))];
-      const nodesTo = await this.fetchNodesByBatches(nextNodeIds, 100);
+      const nodesTo = await this.fetchNodesByBatches(nextNodeIds, 10000);
 
       matchNodesWithIncomingRelationships(nodesTo, relationships);
 
-      // Prevent recursion
-      nodesFrom = nodesTo.filter((n) => !allNodes.has(n.id));
+      const newNodes: Node[] = [];
+      const oldNodes: Node[] = [];
 
-      nodesFrom.forEach((n) => allNodes.set(n.id, n));
-      relationships.forEach((r) => allRelationships.set(r.id, r));
+      for (const node of nodesTo) {
+        if (passedNodes.has(node.id)) {
+          oldNodes.push(passedNodes.get(node.id)!);
+          continue;
+        }
+
+        newNodes.push(node);
+      }
+
+      matchNodesWithIncomingRelationships(oldNodes, relationships);
+
+      newNodes.forEach((n) => passedNodes.set(n.id, n));
+
+      nodesFrom = newNodes;
 
       depth++;
     }
