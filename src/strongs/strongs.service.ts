@@ -48,7 +48,7 @@ export class StrongsService {
       where: {
         typeName: NodeTypeName.STRONGS_ENTRY,
       },
-      relations: ['type', 'propertyKeys', 'propertyKeys.values'],
+      relations: ['propertyKeys', 'propertyKeys.values'],
     });
 
     return !!strongsEnty;
@@ -142,7 +142,7 @@ export class StrongsService {
       where: {
         typeName: NodeTypeName.STRONGS_ENTRY,
       },
-      relations: ['type', 'type', 'propertyKeys', 'propertyKeys.values'],
+      relations: ['propertyKeys', 'propertyKeys.values'],
     });
 
     this._strongsNodes = new Map();

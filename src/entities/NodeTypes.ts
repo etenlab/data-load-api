@@ -7,8 +7,8 @@ export class NodeType {
   @Column('character varying', { primary: true, name: 'type_name', length: 32 })
   name!: NodeTypeName;
 
-  @OneToMany(() => Node, (nodes) => nodes.type)
-  nodes!: Node[];
+  // @OneToMany(() => Node, (nodes) => nodes.type)
+  // nodes!: Node[];
 }
 
 export enum NodeTypeName {

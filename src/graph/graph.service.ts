@@ -103,9 +103,6 @@ export class GraphService {
     return this.nodeRepo.findOne({
       where: {
         id,
-        // type: {
-        //   name: type,
-        // },
         typeName: type,
       },
     });
@@ -155,7 +152,7 @@ export class GraphService {
         throw new Error(`Node type does not exist: ${node.nodeType}`);
       }
 
-      // node.node.typeName = uniqueTypesByName.get(node.nodeType)!;
+      node.node.typeName = uniqueTypesByName.get(node.nodeType)!.name;
     }
 
     const keys = [] as NodePropertyKey[];
@@ -277,7 +274,6 @@ export class GraphService {
           },
         },
         relations: [
-          'type',
           'fromNode',
           'toNode',
           'relationshipPropertyKeys',
@@ -311,7 +307,7 @@ export class GraphService {
         where: {
           id: In(batch),
         },
-        relations: ['type', 'propertyKeys', 'propertyKeys.values'],
+        relations: ['propertyKeys', 'propertyKeys.values'],
       });
 
       for (const node of batchNodes) {
@@ -334,7 +330,7 @@ export class GraphService {
   ): Promise<Node> {
     const node = await this.nodeRepo.findOne({
       where: { id: nodeId },
-      relations: ['type', 'propertyKeys', 'propertyKeys.values'],
+      relations: ['propertyKeys', 'propertyKeys.values'],
     });
 
     if (!node) {

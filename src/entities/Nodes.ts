@@ -20,9 +20,9 @@ export class Node {
   @OneToMany(() => NodePropertyKey, (nodePropertyKeys) => nodePropertyKeys.node)
   propertyKeys!: NodePropertyKey[];
 
-  @ManyToOne(() => NodeType, (nodeTypes) => nodeTypes.nodes)
-  @JoinColumn([{ name: 'node_type', referencedColumnName: 'name' }])
-  type!: NodeType;
+  // @ManyToOne(() => NodeType, (nodeTypes) => nodeTypes.nodes)
+  // @JoinColumn([{ name: 'node_type', referencedColumnName: 'name' }])
+  // type!: NodeType;
 
   @Column('character varying', { name: 'node_type', length: 32 })
   typeName!: NodeTypeName;
