@@ -2,13 +2,11 @@ import {
   Column,
   Entity,
   Index,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { NodePropertyKey } from './NodePropertyKeys';
-import { NodeType, NodeTypeName } from './NodeTypes';
+import { NodeTypeName } from './NodeTypes';
 import { Relationship } from './Relationships';
 
 @Index('nodes_pkey', ['id'], { unique: true })

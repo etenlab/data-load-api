@@ -1,14 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { NodePropertyKey } from '../entities/NodePropertyKeys';
 import { NodePropertyValue } from '../entities/NodePropertyValues';
 import { Node } from '../entities/Nodes';
 import { NodeType, NodeTypeName } from '../entities/NodeTypes';
-import { parseUSFMMarkers } from '../scripture/usfmParser';
 import { strongsHebrewDictionary } from './strongsDict';
-import { RWMutex, runWithMutexW, runWithMutexR } from 'rw-mutex-ts';
 import { GraphNode, GraphService } from '../graph/graph.service';
 import { Relationship } from '../entities/Relationships';
 

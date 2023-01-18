@@ -33,9 +33,7 @@ export type GraphRelationInput = {
   type: RelationshipTypes;
 
   fromNode: GraphNode;
-  // fromNode: Node;
   toNode: GraphNode;
-  // toNode: Node;
 
   props?: {
     [key: string]: string;
@@ -258,7 +256,10 @@ export class GraphService {
     }
   }
 
-  async fetchRelationshipsByBatches(fromNodeIds: string[], batchSize: number) {
+  async fetchOutgoingRelationshipsByBatches(
+    fromNodeIds: string[],
+    batchSize: number,
+  ) {
     if (batchSize < 1) throw new Error('Batch size should be >=1');
 
     const rels = [] as Relationship[];
@@ -325,23 +326,23 @@ export class GraphService {
 
   // Resolve graph for all available depth via relationships
   async resolveGraphFromNodeDownstream(
-    nodeId: typeof Node.prototype.id,
+    startNodeId: typeof Node.prototype.id,
     maxDepth: number,
   ): Promise<Node> {
-    const node = await this.nodeRepo.findOne({
-      where: { id: nodeId },
+    const startNode = await this.nodeRepo.findOne({
+      where: { id: startNodeId },
       relations: ['propertyKeys', 'propertyKeys.values'],
     });
 
-    if (!node) {
-      throw new Error(`Node does not exist: ${nodeId}`);
+    if (!startNode) {
+      throw new Error(`Node does not exist: ${startNodeId}`);
     }
 
     const passedNodes: Map<string, Node> = new Map();
 
-    let nodesFrom = [node];
+    let nodesFrom = [startNode];
 
-    passedNodes.set(node.id, node);
+    passedNodes.set(startNode.id, startNode);
 
     let depth = 0;
 
@@ -352,7 +353,7 @@ export class GraphService {
 
       const uniqueNodes = [...new Set(nodesFrom.map((n) => n.id))];
 
-      const relationships = await this.fetchRelationshipsByBatches(
+      const relationships = await this.fetchOutgoingRelationshipsByBatches(
         uniqueNodes,
         10000,
       );
@@ -385,7 +386,7 @@ export class GraphService {
       depth++;
     }
 
-    return node;
+    return startNode;
   }
 
   simplifyNodeGraph(
@@ -466,8 +467,6 @@ export class GraphService {
 
     const resolved = await this.resolveGraphFromNodeDownstream(node.id, 10000);
 
-    const downstream = this.simplifyNodeGraph(resolved, false, true);
-    const upstream = this.simplifyNodeGraph(resolved, true, false);
     const graph = this.simplifyNodeGraph(resolved, true, true);
 
     return graph;
