@@ -22,7 +22,7 @@ export class Relationship {
   )
   relationshipPropertyKeys!: RelationshipPropertyKey[];
 
-  @ManyToOne(() => Node, (nodes) => nodes.relationships)
+  @ManyToOne(() => Node, (nodes) => nodes.outgoingRelationships)
   @JoinColumn([{ name: 'from_node_id', referencedColumnName: 'id' }])
   fromNode!: Node;
 
@@ -33,7 +33,7 @@ export class Relationship {
   @JoinColumn([{ name: 'relationship_type', referencedColumnName: 'name' }])
   type!: RelationshipType;
 
-  @ManyToOne(() => Node, (nodes) => nodes.relationships2)
+  @ManyToOne(() => Node, (nodes) => nodes.incomingRelationships)
   @JoinColumn([{ name: 'to_node_id', referencedColumnName: 'id' }])
   toNode!: Node;
 }

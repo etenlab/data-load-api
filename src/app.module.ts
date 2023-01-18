@@ -34,6 +34,7 @@ import { StrongsController } from './strongs/strongs.controller';
 import { ScriptureService } from './scripture/scripture.service';
 import { ScriptureController } from './scripture/scripture.controller';
 import { GraphService } from './graph/graph.service';
+import { GraphController } from './graph/graph.controller';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { GraphService } from './graph/graph.service';
     SilIso6393Controller,
     StrongsController,
     ScriptureController,
+    GraphController,
   ],
   providers: [
     AppService,

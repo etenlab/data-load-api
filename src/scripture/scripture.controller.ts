@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Request, Response, Body } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { ScriptureService } from './scripture.service';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -12,17 +12,28 @@ export class ByTextDTO {
   usfm!: string;
 }
 
+export class GetBookDTO {
+  @ApiProperty()
+  identificator!: string;
+}
+
 @Controller('scripture')
 export class ScriptureController {
   constructor(private readonly scriptureService: ScriptureService) {}
 
   @Post('by-url')
-  async createByUrl(@Body() params: ByUrlDTO) {
-    await this.scriptureService.loadUSFMIntoDBByUrl(params.url);
+  async createByUrl(@Body() params: ByUrlDTO): Promise<{
+    nodeIds: string[];
+  }> {
+    const nodeIds = await this.scriptureService.loadUSFMIntoDBByUrl(params.url);
+
+    return {
+      nodeIds,
+    };
   }
 
   @Post('raw')
   async createWithBody(@Body() params: ByTextDTO) {
-    await this.scriptureService.loadUSFMIntoDB(params.usfm);
+    await this.scriptureService.loadUSFMBooksIntoDB(params.usfm);
   }
 }

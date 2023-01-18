@@ -1,4 +1,5 @@
 import {
+  Column,
   Entity,
   Index,
   JoinColumn,
@@ -7,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { NodePropertyKey } from './NodePropertyKeys';
-import { NodeType } from './NodeTypes';
+import { NodeType, NodeTypeName } from './NodeTypes';
 import { Relationship } from './Relationships';
 
 @Index('nodes_pkey', ['id'], { unique: true })
@@ -23,9 +24,12 @@ export class Node {
   @JoinColumn([{ name: 'node_type', referencedColumnName: 'name' }])
   type!: NodeType;
 
+  // @Column('character varying', { name: 'node_type', length: 32 })
+  // typeName!: NodeTypeName;
+
   @OneToMany(() => Relationship, (relationships) => relationships.fromNode)
-  relationships!: Relationship[];
+  outgoingRelationships!: Relationship[];
 
   @OneToMany(() => Relationship, (relationships) => relationships.toNode)
-  relationships2!: Relationship[];
+  incomingRelationships!: Relationship[];
 }

@@ -1,16 +1,10 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Node } from '../entities/Nodes';
-import { NodeType, NodeTypeName } from '../entities/NodeTypes';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { NodeTypeName } from '../entities/NodeTypes';
 import { Marker, parseUSFMMarkers, stringifyContent } from './usfmParser';
-import { NodePropertyKey } from '../entities/NodePropertyKeys';
-import { NodePropertyValue } from '../entities/NodePropertyValues';
 import { GraphNode, GraphRelation, GraphService } from '../graph/graph.service';
-import { StrongsService, STRONGS_KEY_NAME } from '../strongs/strongs.service';
+import { StrongsService } from '../strongs/strongs.service';
 import { RelationshipTypes } from '../entities/RelationshipTypes';
 
 /** Nodes and relations: (relation_property) NODE_TYPE:node_property
@@ -56,6 +50,61 @@ type Book = {
   chapters: Chapter[];
 };
 
+// type BookOutput = {
+//   id: string;
+//   chapters: ChapterOutput[];
+// };
+
+// type ChapterOutput = {
+//   number: string;
+//   sections: SectionOutput[];
+//   paragraphs: ParagraphOutput[];
+// };
+
+// type SectionOutput = {
+//   title: string;
+//   paragraphs: ParagraphOutput[];
+// };
+
+// type ParagraphOutput = {
+//   verses: VerseOutput[];
+// };
+
+// type VerseOutput = {
+//   number: string;
+//   words: SentenceOutput[];
+// };
+
+// type SentenceOutput = {
+//   text: string;
+//   words: WordOutput[];
+// };
+
+// type WordOutput = {
+//   text: string;
+//   strongs: Node[];
+//   addition: string;
+// };
+
+const BOOK_ID_PROP_NAME = 'id';
+const CHAPTER_NUMBER_PROP_NAME = 'number';
+const SECTION_TITLE_PROP_NAME = 'title';
+const VERSE_TEXT_PROP_NAME = 'text';
+const SENTENCE_TEXT_PROP_NAME = 'text';
+const WORD_TEXT_PROP_NAME = 'text';
+const ADDITION_TEXT_PROP_NAME = 'text';
+
+const BOOK_TO_CHAPTER_ORDER_PROP_NAME = 'order_book';
+const BOOK_TO_CHAPTER_NUMBER_PROP_NAME = 'chapter_number';
+const CHAPTER_TO_SECTION_ORDER_PROP_NAME = 'order_chapter';
+const CHAPTER_TO_PARAGRAPH_ORDER_PROP_NAME = 'order_chapter';
+const SECTION_TO_PARAGRAPH_ORDER_PROP_NAME = 'order_section';
+const VERSE_TO_PARAGRAPH_NUMBER_PROP_NAME = 'verse_number';
+const VERSE_TO_PARAGRAPH_ORDER_PROP_NAME = 'order_paragraph';
+const VERSE_TO_SENTENCE_ORDER_PROP_NAME = 'order_verse';
+const SENTENCE_TO_WORD_ORDER_PROP_NAME = 'order_sentence';
+const SENTENCE_TO_WORD_CHAR_INDEX_PROP_NAME = 'char_index';
+
 @Injectable()
 export class ScriptureService {
   constructor(
@@ -64,7 +113,7 @@ export class ScriptureService {
     private readonly strongsService: StrongsService,
   ) {}
 
-  async loadUSFMIntoDB(usfmDoc: string) {
+  async loadUSFMBooksIntoDB(usfmDoc: string): Promise<string[]> {
     if (!(await this.strongsService.areStrongsLoaded())) {
       await this.strongsService.loadStrongsIntoDB();
     }
@@ -81,12 +130,18 @@ export class ScriptureService {
 
     await this.graphService.saveNodes(nodes);
     await this.graphService.saveRelations(relations);
+
+    const newBookIds = nodes
+      .filter((n) => n.nodeType === NodeTypeName.BOOK)
+      .map((n) => n.node.id);
+
+    return newBookIds;
   }
 
   async loadUSFMIntoDBByUrl(url: string) {
     const response = await this.httpService.axiosRef.get(url);
 
-    await this.loadUSFMIntoDB(response.data);
+    return await this.loadUSFMBooksIntoDB(response.data);
   }
 
   private buildGraphFromBooks(books: Book[]): {
@@ -107,7 +162,7 @@ export class ScriptureService {
       const bookNode = this.graphService.makeNode({
         type: NodeTypeName.BOOK,
         properties: {
-          id: bookId,
+          [BOOK_ID_PROP_NAME]: bookId,
         },
       });
 
@@ -119,7 +174,8 @@ export class ScriptureService {
         const chapterNode = this.graphService.makeNode({
           type: NodeTypeName.CHAPTER,
           properties: {
-            number: chapter.marker.stringifiedContent.trim(),
+            [CHAPTER_NUMBER_PROP_NAME]:
+              chapter.marker.stringifiedContent.trim(),
           },
         });
 
@@ -127,11 +183,12 @@ export class ScriptureService {
 
         const relationship = this.graphService.makeRelation({
           type: RelationshipTypes.BOOK_TO_CHAPTER,
-          fromNode: bookNode.node,
-          toNode: chapterNode.node,
+          fromNode: bookNode,
+          toNode: chapterNode,
           props: {
-            order_book: `${i + 1}`,
-            chapter_number: chapter.marker.stringifiedContent.trim(),
+            [BOOK_TO_CHAPTER_ORDER_PROP_NAME]: `${i + 1}`,
+            [BOOK_TO_CHAPTER_NUMBER_PROP_NAME]:
+              chapter.marker.stringifiedContent.trim(),
           },
         });
 
@@ -145,7 +202,8 @@ export class ScriptureService {
           const sectionNode = this.graphService.makeNode({
             type: NodeTypeName.SECTION,
             properties: {
-              title: section.marker.stringifiedContent.trim(),
+              [SECTION_TITLE_PROP_NAME]:
+                section.marker.stringifiedContent.trim(),
             },
           });
 
@@ -155,10 +213,10 @@ export class ScriptureService {
 
           const relationship = this.graphService.makeRelation({
             type: RelationshipTypes.CHAPTER_TO_SECTION,
-            fromNode: chapterNode.node,
-            toNode: sectionNode.node,
+            fromNode: chapterNode,
+            toNode: sectionNode,
             props: {
-              order_chapter: `${j + 1}`,
+              [CHAPTER_TO_SECTION_ORDER_PROP_NAME]: `${j + 1}`,
             },
           });
 
@@ -176,10 +234,10 @@ export class ScriptureService {
 
           const relationship = this.graphService.makeRelation({
             type: RelationshipTypes.CHAPTER_TO_PARAGRAPH,
-            fromNode: chapterNode.node,
-            toNode: paragraphNode.node,
+            fromNode: chapterNode,
+            toNode: paragraphNode,
             props: {
-              order_chapter: `${p + 1}`,
+              [CHAPTER_TO_PARAGRAPH_ORDER_PROP_NAME]: `${p + 1}`,
             },
           });
 
@@ -202,10 +260,10 @@ export class ScriptureService {
 
             const relationship = this.graphService.makeRelation({
               type: RelationshipTypes.SECTION_TO_PARAGRAPH,
-              fromNode: sectionNode.node,
-              toNode: paragraphNode.node,
+              fromNode: sectionNode,
+              toNode: paragraphNode,
               props: {
-                order_section: `${s + 1}`,
+                [SECTION_TO_PARAGRAPH_ORDER_PROP_NAME]: `${s + 1}`,
               },
             });
 
@@ -218,7 +276,7 @@ export class ScriptureService {
             const verseNode = this.graphService.makeNode({
               type: NodeTypeName.VERSE,
               properties: {
-                text: verse.marker.stringifiedContent.trim(),
+                [VERSE_TEXT_PROP_NAME]: verse.marker.stringifiedContent.trim(),
               },
             });
 
@@ -231,17 +289,17 @@ export class ScriptureService {
               ?.trim();
 
             const props = {
-              order_paragraph: `${v + 1}`,
+              [VERSE_TO_PARAGRAPH_ORDER_PROP_NAME]: `${v + 1}`,
             } as any;
 
             if (verseNumber) {
-              props['verse_number'] = verseNumber;
+              props[VERSE_TO_PARAGRAPH_NUMBER_PROP_NAME] = verseNumber;
             }
 
             const relationship = this.graphService.makeRelation({
               type: RelationshipTypes.PARAGRAPH_TO_VERSE,
-              fromNode: paragraphNode.node,
-              toNode: verseNode.node,
+              fromNode: paragraphNode,
+              toNode: verseNode,
               props,
             });
 
@@ -255,7 +313,8 @@ export class ScriptureService {
               const sentenceNode = this.graphService.makeNode({
                 type: NodeTypeName.SENTENCE,
                 properties: {
-                  text: stringifyContent(sentenseMarkers).trim(),
+                  [SENTENCE_TEXT_PROP_NAME]:
+                    stringifyContent(sentenseMarkers).trim(),
                 },
               });
 
@@ -263,10 +322,10 @@ export class ScriptureService {
 
               const relationship = this.graphService.makeRelation({
                 type: RelationshipTypes.VERSE_TO_SENTENCE,
-                fromNode: verseNode.node,
-                toNode: sentenceNode.node,
+                fromNode: verseNode,
+                toNode: sentenceNode,
                 props: {
-                  order_verse: `${s + 1}`,
+                  [VERSE_TO_SENTENCE_ORDER_PROP_NAME]: `${s + 1}`,
                 },
               });
 
@@ -287,7 +346,7 @@ export class ScriptureService {
                   const wordNode = this.graphService.makeNode({
                     type: NodeTypeName.WORD,
                     properties: {
-                      text: marker.stringifiedContent.trim(),
+                      [WORD_TEXT_PROP_NAME]: marker.stringifiedContent.trim(),
                     },
                   });
 
@@ -297,11 +356,11 @@ export class ScriptureService {
 
                   const relationship = this.graphService.makeRelation({
                     type: RelationshipTypes.SENTENCE_TO_WORD,
-                    fromNode: sentenceNode.node,
-                    toNode: wordNode.node,
+                    fromNode: sentenceNode,
+                    toNode: wordNode,
                     props: {
-                      order_sentence: `${sentenceWordIndex}`,
-                      char_index: `${charIndex}`,
+                      [SENTENCE_TO_WORD_ORDER_PROP_NAME]: `${sentenceWordIndex}`,
+                      [SENTENCE_TO_WORD_CHAR_INDEX_PROP_NAME]: `${charIndex}`,
                     },
                   });
 
@@ -317,11 +376,8 @@ export class ScriptureService {
                   if (strongsNode) {
                     const relationship = this.graphService.makeRelation({
                       type: RelationshipTypes.WORD_TO_STRONGS_ENTRY,
-                      fromNode: wordNode.node,
+                      fromNode: wordNode,
                       toNode: strongsNode,
-                      props: {
-                        text: marker.stringifiedContent.trim(),
-                      },
                     });
 
                     relations.push(relationship);
@@ -334,7 +390,8 @@ export class ScriptureService {
                   const additionNode = this.graphService.makeNode({
                     type: NodeTypeName.ADDITION,
                     properties: {
-                      text: marker.stringifiedContent.trim(),
+                      [ADDITION_TEXT_PROP_NAME]:
+                        marker.stringifiedContent.trim(),
                     },
                   });
 
@@ -342,8 +399,8 @@ export class ScriptureService {
 
                   const relationship = this.graphService.makeRelation({
                     type: RelationshipTypes.WORD_TO_ADDITION,
-                    fromNode: lastWordNode.node,
-                    toNode: additionNode.node,
+                    fromNode: lastWordNode,
+                    toNode: additionNode,
                   });
 
                   charIndex += marker.stringifiedContent.length;
@@ -412,7 +469,7 @@ export class ScriptureService {
           const strongsNode = this.strongsService.getStrongsNode(strongsKey);
           const word: Word = {
             marker: wordMarker,
-            strongs: strongsNode ? [strongsNode] : [],
+            strongs: strongsNode ? [strongsNode.node] : [],
           };
 
           verse.words.push(word);

@@ -9,6 +9,8 @@ import { NodeType, NodeTypeName } from '../entities/NodeTypes';
 import { parseUSFMMarkers } from '../scripture/usfmParser';
 import { strongsHebrewDictionary } from './strongsDict';
 import { RWMutex, runWithMutexW, runWithMutexR } from 'rw-mutex-ts';
+import { GraphNode, GraphService } from '../graph/graph.service';
+import { Relationship } from '../entities/Relationships';
 
 export const STRONGS_KEY_NAME = 'strongs_id';
 
@@ -24,7 +26,7 @@ export type StrongsDef = {
 @Injectable()
 export class StrongsService {
   private _strongsDictionary?: Map<string, StrongsDef>;
-  private _strongsNodes?: Map<string, Node>;
+  private _strongsNodes?: Map<string, GraphNode>;
 
   constructor(
     @InjectRepository(Node)
@@ -35,7 +37,10 @@ export class StrongsService {
     private readonly nodePropertyKeysRepo: Repository<NodePropertyKey>,
     @InjectRepository(NodePropertyValue)
     private readonly nodePropertyValuesRepo: Repository<NodePropertyValue>,
+    @InjectRepository(Relationship)
+    private readonly relationshipRepo: Repository<Relationship>,
     private readonly httpService: HttpService,
+    private readonly graphService: GraphService,
   ) {}
 
   async areStrongsLoaded(): Promise<boolean> {
@@ -67,30 +72,7 @@ export class StrongsService {
       where: { type: { name: nodeType.name } },
     });
 
-    const keys = await this.nodePropertyKeysRepo.find({
-      where: { node: { type: { name: nodeType.name } } },
-    });
-
-    const values = await this.nodePropertyValuesRepo.find({
-      where: {
-        nodePropertyKey: {
-          id: In(keys.map((k) => k.id)),
-        },
-      },
-      relations: ['nodePropertyKey'],
-    });
-
-    await this.nodePropertyValuesRepo.delete({
-      id: In(values.map((v) => v.id)),
-    });
-
-    await this.nodePropertyKeysRepo.delete({
-      id: In(keys.map((k) => k.id)),
-    });
-
-    await this.nodeRepo.delete({
-      id: In(nodes.map((n) => n.id)),
-    });
+    await this.graphService.destroyNodes(nodes.map((n) => n.id));
 
     const createdNodes = [] as Node[];
     const createdKeys = [] as NodePropertyKey[];
@@ -176,8 +158,16 @@ export class StrongsService {
 
       const strongsKey = propKey.values[0].value?.['value'];
 
+      const graphNode: GraphNode = {
+        initialized: true,
+        node,
+        nodeType: node.type.name,
+        keys: node.propertyKeys,
+        values: node.propertyKeys.map((k) => k.values).flat(),
+      };
+
       if (strongsKey) {
-        this._strongsNodes.set(strongsKey, node);
+        this._strongsNodes.set(strongsKey, graphNode);
       }
     }
   }

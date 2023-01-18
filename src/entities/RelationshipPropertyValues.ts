@@ -20,7 +20,7 @@ export class RelationshipPropertyValue {
   id!: string;
 
   @Column('jsonb', { name: 'property_value', nullable: true })
-  value!: object | null;
+  value!: { [key: string]: any } | null;
 
   @ManyToOne(
     () => RelationshipPropertyKey,
