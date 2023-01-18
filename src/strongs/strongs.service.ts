@@ -46,9 +46,7 @@ export class StrongsService {
   async areStrongsLoaded(): Promise<boolean> {
     const strongsEnty = await this.nodeRepo.findOne({
       where: {
-        type: {
-          name: NodeTypeName.STRONGS_ENTRY,
-        },
+        typeName: NodeTypeName.STRONGS_ENTRY,
       },
       relations: ['type', 'propertyKeys', 'propertyKeys.values'],
     });
@@ -69,7 +67,7 @@ export class StrongsService {
 
     // clear all existing string entries
     const nodes = await this.nodeRepo.find({
-      where: { type: { name: nodeType.name } },
+      where: { typeName: nodeType.name },
     });
 
     await this.graphService.destroyNodes(nodes.map((n) => n.id));
@@ -84,7 +82,7 @@ export class StrongsService {
     )) {
       // node for strongs entry
       const node = new Node();
-      node.type = nodeType;
+      node.typeName = nodeType.name;
       node.propertyKeys = Object.entries(strongsEntry).map(([key, value]) => {
         const nodePropertyKey = new NodePropertyKey();
         nodePropertyKey.key = key;
@@ -142,9 +140,7 @@ export class StrongsService {
   async syncStrongsNodesFromDB() {
     const nodes = await this.nodeRepo.find({
       where: {
-        type: {
-          name: NodeTypeName.STRONGS_ENTRY,
-        },
+        typeName: NodeTypeName.STRONGS_ENTRY,
       },
       relations: ['type', 'type', 'propertyKeys', 'propertyKeys.values'],
     });
@@ -161,7 +157,7 @@ export class StrongsService {
       const graphNode: GraphNode = {
         initialized: true,
         node,
-        nodeType: node.type.name,
+        nodeType: node.typeName,
         keys: node.propertyKeys,
         values: node.propertyKeys.map((k) => k.values).flat(),
       };

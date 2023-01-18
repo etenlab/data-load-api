@@ -24,8 +24,8 @@ export class Node {
   @JoinColumn([{ name: 'node_type', referencedColumnName: 'name' }])
   type!: NodeType;
 
-  // @Column('character varying', { name: 'node_type', length: 32 })
-  // typeName!: NodeTypeName;
+  @Column('character varying', { name: 'node_type', length: 32 })
+  typeName!: NodeTypeName;
 
   @OneToMany(() => Relationship, (relationships) => relationships.fromNode)
   outgoingRelationships!: Relationship[];

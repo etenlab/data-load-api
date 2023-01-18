@@ -103,9 +103,10 @@ export class GraphService {
     return this.nodeRepo.findOne({
       where: {
         id,
-        type: {
-          name: type,
-        },
+        // type: {
+        //   name: type,
+        // },
+        typeName: type,
       },
     });
   }
@@ -154,7 +155,7 @@ export class GraphService {
         throw new Error(`Node type does not exist: ${node.nodeType}`);
       }
 
-      node.node.type = uniqueTypesByName.get(node.nodeType)!;
+      // node.node.typeName = uniqueTypesByName.get(node.nodeType)!;
     }
 
     const keys = [] as NodePropertyKey[];
@@ -390,7 +391,7 @@ export class GraphService {
 
     const selfNode: NodeSimplified = {
       id: node.id,
-      type: node.type.name,
+      type: node.typeName,
       props: buildNodeProps(node),
       incoming: incoming ? [] : undefined,
       outgoing: outgoing ? [] : undefined,
