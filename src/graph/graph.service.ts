@@ -454,24 +454,6 @@ export class GraphService {
     return selfNode;
   }
 
-  async resolveNode(id: string) {
-    const node = await this.nodeRepo.findOne({
-      where: {
-        id,
-      },
-    });
-
-    if (!node) {
-      return undefined;
-    }
-
-    const resolved = await this.resolveGraphFromNodeDownstream(node.id, 10000);
-
-    const graph = this.simplifyNodeGraph(resolved, true, true);
-
-    return graph;
-  }
-
   async destroyNodes(ids: string[]) {
     const nodes = await this.nodeRepo.find({
       where: {

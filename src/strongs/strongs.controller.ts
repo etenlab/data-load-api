@@ -1,11 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Post } from '@nestjs/common';
 import { StrongsService } from './strongs.service';
 
 @Controller('strongs')
 export class StrongsController {
   constructor(private strongsService: StrongsService) {}
 
-  @Get('create')
+  @Post('create')
   async create() {
     await this.strongsService.loadStrongsIntoDB();
   }

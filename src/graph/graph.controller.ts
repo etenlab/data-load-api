@@ -17,7 +17,7 @@ type Direction = 'all' | 'upstream' | 'downstream';
 export class GraphController {
   constructor(private readonly graphService: GraphService) {}
 
-  @Get('node/:id')
+  @Get('from-node/:id')
   @ApiOkResponse({
     description:
       'Output graph starting with the node. Result is stringified with utils.inspect',
@@ -35,10 +35,17 @@ export class GraphController {
     description:
       'The direction to traverse the graph. Only "downstream" is implemented',
   })
+  @ApiQuery({
+    name: 'max-depth',
+    type: 'number',
+    description: 'Max depth to traverse the graph. Default is 1000',
+  })
   async getNodeGraph(
     @Param('id') id: string,
     @Query('direction')
     direction: Direction = 'all',
+    @Query('max-depth')
+    maxDepth = 1000,
   ) {
     if (!Number.isInteger(Number(id))) {
       throw new BadRequestException('id should be integer');
@@ -65,7 +72,7 @@ export class GraphController {
 
     const resolved = await this.graphService.resolveGraphFromNodeDownstream(
       id,
-      10000,
+      maxDepth,
     );
 
     const graph = this.graphService.simplifyNodeGraph(
