@@ -305,16 +305,32 @@ export class ScriptureService {
 
             relations.push(relationship);
 
-            const sentences = SplitVerseIntoSentences(verse.marker.content);
+            const verseContent = [...verse.marker.content];
+            // Cut verse number from verse content
+            if (typeof verseContent[0] === 'string') {
+              const stringContentAfterVerseNumber = verseContent[0]
+                .split(' ')
+                .slice(1)
+                .join(' ');
+
+              if (stringContentAfterVerseNumber) {
+                verseContent[0] = stringContentAfterVerseNumber;
+              } else {
+                verseContent.shift();
+              }
+            }
+
+            const sentences = SplitVerseIntoSentences(verseContent);
 
             for (let s = 0; s < sentences.length; s++) {
               const sentenseMarkers = sentences[s];
 
+              const sentenceText = stringifyContent(sentenseMarkers).trim();
+
               const sentenceNode = this.graphService.makeNode({
                 type: NodeTypeName.SENTENCE,
                 properties: {
-                  [SENTENCE_TEXT_PROP_NAME]:
-                    stringifyContent(sentenseMarkers).trim(),
+                  [SENTENCE_TEXT_PROP_NAME]: sentenceText,
                 },
               });
 
@@ -596,33 +612,46 @@ function isBookToken(token: string) {
 function SplitVerseIntoSentences(
   verseMarkers: (Marker | string)[],
 ): (Marker | string)[][] {
-  const sentences: (Marker | string)[][] = [[]];
+  const sentences: (Marker | string)[][] = [];
+
+  // Skip parsing sentences if verse contains any of the following characters. TODO: parse sentences properly
+  if (
+    verseMarkers.some(
+      (vm) =>
+        typeof vm === 'string' &&
+        (vm.includes('(') || vm.includes('"') || vm.includes("'")),
+    )
+  ) {
+    return [verseMarkers];
+  }
+
+  let currentSentenceIndex = 0;
 
   for (const marker of verseMarkers) {
     if (typeof marker !== 'string') {
-      sentences[sentences.length - 1].push(marker);
+      sentences[currentSentenceIndex] = sentences[currentSentenceIndex] || [];
+      sentences[currentSentenceIndex].push(marker);
 
       continue;
     }
 
-    if (!marker.trim()) {
-      continue;
-    }
-
-    // Divide on sentences ending with punctuation: . ! ? or end of line
     const innerSentencesIterator = marker.matchAll(
       /([^\.\!\?\n]+[\.\!\?\n]?)/g,
     );
 
     const innerSentences = Array.from(innerSentencesIterator).map((m) => m[0]);
 
-    sentences[sentences.length - 1].push(innerSentences[0]);
+    sentences[currentSentenceIndex] = sentences[currentSentenceIndex] || [];
+    sentences[currentSentenceIndex].push(innerSentences[0]);
 
     for (const nextSentences of innerSentences.slice(1)) {
+      currentSentenceIndex++;
+
       const s = nextSentences.trim();
 
       if (s) {
-        sentences.push([s]);
+        sentences[currentSentenceIndex] = sentences[currentSentenceIndex] || [];
+        sentences[currentSentenceIndex].push(s);
       }
     }
   }
