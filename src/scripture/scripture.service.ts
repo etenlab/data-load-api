@@ -50,42 +50,6 @@ type Book = {
   chapters: Chapter[];
 };
 
-// type BookOutput = {
-//   id: string;
-//   chapters: ChapterOutput[];
-// };
-
-// type ChapterOutput = {
-//   number: string;
-//   sections: SectionOutput[];
-//   paragraphs: ParagraphOutput[];
-// };
-
-// type SectionOutput = {
-//   title: string;
-//   paragraphs: ParagraphOutput[];
-// };
-
-// type ParagraphOutput = {
-//   verses: VerseOutput[];
-// };
-
-// type VerseOutput = {
-//   number: string;
-//   words: SentenceOutput[];
-// };
-
-// type SentenceOutput = {
-//   text: string;
-//   words: WordOutput[];
-// };
-
-// type WordOutput = {
-//   text: string;
-//   strongs: Node[];
-//   addition: string;
-// };
-
 const BOOK_ID_PROP_NAME = 'id';
 const CHAPTER_NUMBER_PROP_NAME = 'number';
 const SECTION_TITLE_PROP_NAME = 'title';
