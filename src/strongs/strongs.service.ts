@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { NodePropertyKey } from '../entities/NodePropertyKeys';
 import { NodePropertyValue } from '../entities/NodePropertyValues';
 import { Node } from '../entities/Nodes';
@@ -37,6 +37,8 @@ export class StrongsService {
     private readonly nodePropertyValuesRepo: Repository<NodePropertyValue>,
     @InjectRepository(Relationship)
     private readonly relationshipRepo: Repository<Relationship>,
+    @InjectEntityManager()
+    private readonly em: EntityManager,
     private readonly httpService: HttpService,
     private readonly graphService: GraphService,
   ) {}
@@ -120,6 +122,8 @@ export class StrongsService {
     await this.nodePropertyValuesRepo.save(createdValues, {
       chunk: 1000,
     });
+
+    await this.em.query('REFRESH MATERIALIZED VIEW strongs_dictionary');
   }
 
   get strongsDictionary() {
