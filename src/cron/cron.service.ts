@@ -4,14 +4,14 @@ import { Injectable } from '@nestjs/common';
 // import { UfCountriesListService } from 'src/uf-countries-list/uf-countries-list.service';
 import { Cron } from '@nestjs/schedule';
 
-import { Iso6392Service } from 'src/iso6392/iso6392.service';
-import { SilCountryCodesService } from 'src/sil-country-codes/sil-country-codes.service';
-import { SilIso6393Service } from 'src/sil-iso6393/sil-iso6393.service';
-import { SilIso6393MacrolanguagesService } from 'src/sil-iso6393-macrolanguages/sil-iso6393-macrolanguages.service';
-import { SilIso6393NameService } from 'src/sil-iso6393-name/sil-iso6393-name.service';
-import { SilIso6393RetirementsService } from 'src/sil-iso6393-retirements/sil-iso6393-retirements.service';
-import { SilLanguageCodesService } from 'src/sil-language-codes/sil-language-codes.service';
-import { SilLanguageIndexService } from 'src/sil-language-index/sil-language-index.service';
+import { Iso6392Service } from '../iso6392/iso6392.service';
+import { SilCountryCodesService } from '../sil-country-codes/sil-country-codes.service';
+import { SilIso6393Service } from '../sil-iso6393/sil-iso6393.service';
+import { SilIso6393MacrolanguagesService } from '../sil-iso6393-macrolanguages/sil-iso6393-macrolanguages.service';
+import { SilIso6393NameService } from '../sil-iso6393-name/sil-iso6393-name.service';
+import { SilIso6393RetirementsService } from '../sil-iso6393-retirements/sil-iso6393-retirements.service';
+import { SilLanguageCodesService } from '../sil-language-codes/sil-language-codes.service';
+import { SilLanguageIndexService } from '../sil-language-index/sil-language-index.service';
 
 @Injectable()
 export class CronService {
