@@ -57,6 +57,7 @@ const VERSE_TEXT_PROP_NAME = 'text';
 const SENTENCE_TEXT_PROP_NAME = 'text';
 const WORD_TEXT_PROP_NAME = 'text';
 const ADDITION_TEXT_PROP_NAME = 'text';
+const WORD_STRONGS_REF_PROP_NAME = 'strongs_ref';
 
 const BOOK_TO_CHAPTER_ORDER_PROP_NAME = 'order_book';
 const BOOK_TO_CHAPTER_NUMBER_PROP_NAME = 'chapter_number';
@@ -323,10 +324,13 @@ export class ScriptureService {
                 }
 
                 if (isWordToken(marker.token)) {
+                  const strongsRef = marker.attributes?.['strong'];
+
                   const wordNode = this.graphService.makeNode({
                     type: NodeTypeName.WORD,
                     properties: {
                       [WORD_TEXT_PROP_NAME]: marker.stringifiedContent.trim(),
+                      [WORD_STRONGS_REF_PROP_NAME]: strongsRef,
                     },
                   });
 
@@ -349,9 +353,8 @@ export class ScriptureService {
 
                   relations.push(relationship);
 
-                  const strongsNode = this.strongsService.getStrongsNode(
-                    marker.attributes?.['strong'],
-                  );
+                  const strongsNode =
+                    this.strongsService.getStrongsNode(strongsRef);
 
                   if (strongsNode) {
                     const relationship = this.graphService.makeRelation({
