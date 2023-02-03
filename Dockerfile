@@ -7,8 +7,10 @@ WORKDIR /usr/src/etenlab/data-load-api
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 COPY package*.json ./
-RUN npm install
-COPY . .
+COPY tsconfig*.json ./
+COPY src ./
 
-EXPOSE 8101
+RUN npm ci
+RUN npm run build
+
 CMD [ "npm", "run", "start:prod" ]

@@ -1,6 +1,6 @@
 name: Build, Dockerize, Upload
 on: [push]
-      
+
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -8,20 +8,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-
-      - name: Prepare Node 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Install Nest
-        run: npm i -g @nestjs/cli
-
-      - name: Build
-        run: nest build 
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -44,7 +30,7 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: etenlab/data-load-api
-      
+
       - name: Build and push Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
