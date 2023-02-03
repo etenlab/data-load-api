@@ -17,3 +17,14 @@ export const entities = [
   RelationshipPropertyValue,
   RelationshipType,
 ];
+
+export {
+  Node,
+  NodeType,
+  NodePropertyKey,
+  Relationship,
+  NodePropertyValue,
+  RelationshipPropertyKey,
+  RelationshipPropertyValue,
+  RelationshipType,
+};
