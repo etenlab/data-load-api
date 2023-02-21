@@ -2,7 +2,7 @@ import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { Relationship } from './Relationships';
 
 @Index('relationship_types_pkey', ['name'], { unique: true })
-@Entity('relationship_types', { schema: 'public' })
+@Entity('relationship_types', { schema: 'admin' })
 export class RelationshipType {
   @Column('character varying', { primary: true, name: 'type_name', length: 32 })
   name!: RelationshipTypes;

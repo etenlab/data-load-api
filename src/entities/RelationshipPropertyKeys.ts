@@ -13,7 +13,7 @@ import { RelationshipPropertyValue } from './RelationshipPropertyValues';
 @Index('relationship_property_keys_pkey', ['id'], {
   unique: true,
 })
-@Entity('relationship_property_keys', { schema: 'public' })
+@Entity('relationship_property_keys', { schema: 'admin' })
 export class RelationshipPropertyKey {
   @PrimaryGeneratedColumn({
     type: 'bigint',

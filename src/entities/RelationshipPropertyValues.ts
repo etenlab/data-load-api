@@ -11,7 +11,7 @@ import { RelationshipPropertyKey } from './RelationshipPropertyKeys';
 @Index('relationship_property_values_pkey', ['id'], {
   unique: true,
 })
-@Entity('relationship_property_values', { schema: 'public' })
+@Entity('relationship_property_values', { schema: 'admin' })
 export class RelationshipPropertyValue {
   @PrimaryGeneratedColumn({
     type: 'bigint',

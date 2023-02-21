@@ -9,7 +9,7 @@ import {
 import { NodePropertyKey } from './NodePropertyKeys';
 
 @Index('node_property_values_pkey', ['id'], { unique: true })
-@Entity('node_property_values', { schema: 'public' })
+@Entity('node_property_values', { schema: 'admin' })
 export class NodePropertyValue {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'node_property_value_id' })
   id!: string;

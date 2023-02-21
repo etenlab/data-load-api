@@ -10,7 +10,7 @@ import { NodeTypeName } from './NodeTypes';
 import { Relationship } from './Relationships';
 
 @Index('nodes_pkey', ['id'], { unique: true })
-@Entity('nodes', { schema: 'public' })
+@Entity('nodes', { schema: 'admin' })
 export class Node {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'node_id' })
   id!: string;

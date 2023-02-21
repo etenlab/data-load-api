@@ -11,7 +11,7 @@ import { Node } from './Nodes';
 import { RelationshipType } from './RelationshipTypes';
 
 @Index('relationships_pkey', ['id'], { unique: true })
-@Entity('relationships', { schema: 'public' })
+@Entity('relationships', { schema: 'admin' })
 export class Relationship {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'relationship_id' })
   id!: string;
