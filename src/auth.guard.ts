@@ -3,7 +3,7 @@ import { Request } from 'express';
 
 const basicAuthCredentials = process.env.BASIC_AUTH_CREDENTIALS;
 
-const allowedPaths = ['/', '/api', '/info'];
+const allowedPaths = ['/', '/api', '/info', '/usfm/to-markers'];
 
 @Injectable()
 export class AuthGuard implements CanActivate {

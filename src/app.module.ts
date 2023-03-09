@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -35,6 +40,25 @@ import { ScriptureService } from './scripture/scripture.service';
 import { ScriptureController } from './scripture/scripture.controller';
 import { GraphService } from './graph/graph.service';
 import { GraphController } from './graph/graph.controller';
+import { UsfmController } from './usfm/usfm.controller';
+
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response } from 'express';
+import * as bodyParser from 'body-parser';
+
+@Injectable()
+export class RawBodyMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: () => any) {
+    bodyParser.raw({ type: '*/*', limit: '100mb' })(req, res, next);
+  }
+}
+
+@Injectable()
+export class JsonBodyMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: () => any) {
+    bodyParser.json()(req, res, next);
+  }
+}
 
 @Module({
   imports: [
@@ -72,6 +96,7 @@ import { GraphController } from './graph/graph.controller';
     StrongsController,
     ScriptureController,
     GraphController,
+    UsfmController,
   ],
   providers: [
     AppService,
@@ -94,6 +119,17 @@ import { GraphController } from './graph/graph.controller';
     GraphService,
   ],
 })
-export class AppModule {
+export class AppModule implements NestModule {
   constructor(private readonly config: ConfigService) {}
+
+  public configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(RawBodyMiddleware)
+      .forRoutes({
+        path: '/usfm/to-markers',
+        method: RequestMethod.POST,
+      })
+      .apply(JsonBodyMiddleware)
+      .forRoutes('*');
+  }
 }
